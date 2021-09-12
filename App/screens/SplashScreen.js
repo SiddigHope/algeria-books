@@ -32,9 +32,14 @@ class SplashScreen extends Component {
             alert('Something went Wrong');
             setTimeout(() => BackHandler.exitApp(), 3000);
           }
+        })
+        .catch(error => {
+          console.log(error);
+          Alert.alert('يجب الاتصال بالانترنت');
         });
     } catch (error) {
       console.log(error);
+      Alert.alert('يجب الاتصال بالانترنت');
     }
   };
 

@@ -6,11 +6,12 @@ import {
   StyleSheet,
   View,
   FlatList,
-  Modal,
+  BackHandler,
   TouchableOpacity,
   Pressable,
   StatusBar,
   Image,
+  Dimensions,
 } from 'react-native';
 import AsyncStorage from '@react-native-community/async-storage';
 import RNFetchBlob from 'rn-fetch-blob';
@@ -18,18 +19,10 @@ import jwt_decode from 'jwt-decode';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import _ from 'lodash';
 import {mainDomain} from '../config/var';
-import {
-  Container,
-  Body,
-  Header,
-  Left,
-  Right,
-  Drawer,
-  Tab,
-  Tabs,
-} from 'native-base';
+import {Body, Header, Left, Right} from 'native-base';
 import SideBar from './../config/SideBar';
 
+const {width, height} = Dimensions.get('window');
 export default class MyStudents extends Component {
   constructor(props) {
     super(props);
@@ -49,15 +42,33 @@ export default class MyStudents extends Component {
   componentDidMount() {
     this.checkUser();
     // this.getStudents();
+    BackHandler.addEventListener('hardwareBackPress', this.handleBackPress);
   }
 
-  closeDrawer() {
-    this.drawer._root.close();
+  componentWillUnmount() {
+    BackHandler.removeEventListener('hardwareBackPress', this.handleBackPress);
   }
 
-  openDrawer() {
-    this.drawer._root.open();
-  }
+  handleBackPress = () => {
+    if (this.props.navigation.isFocused()) {
+      Alert.alert(
+        'إنهاء التطبيق',
+        'هل حقاً تريد إنهاء التطبيق',
+        [
+          {
+            text: 'لا',
+            onPress: () => console.log('Cancel Pressed'),
+            style: 'cancel',
+          },
+          {text: 'نعم', onPress: () => BackHandler.exitApp()},
+        ],
+        {cancelable: false},
+      );
+      return true;
+    }
+
+    // return true;  // Do nothing when back button is pressed
+  };
 
   checkUser = async () => {
     const date = new Date(Date.now());
@@ -105,7 +116,7 @@ export default class MyStudents extends Component {
       ],
     )
       .then(resp => {
-        console.log(resp.data)
+        console.log(resp.data);
         const data = JSON.parse(resp.data);
         const token = data.data; //"Don't touch this shit"
         const jwt = jwt_decode(token);
@@ -196,13 +207,7 @@ export default class MyStudents extends Component {
       </TouchableOpacity>
     );
     return (
-      <Drawer
-        side="right"
-        ref={ref => {
-          this.drawer = ref;
-        }}
-        content={<SideBar navigator={this.props.navigation} />}
-        onClose={() => this.closeDrawer()}>
+      <>
         <View style={styles.container}>
           <StatusBar backgroundColor="#32899F" />
           <Header
@@ -219,9 +224,15 @@ export default class MyStudents extends Component {
             </Body>
             <Right style={{marginRights: 15}}>
               <TouchableOpacity
-                onPress={() => this.openDrawer()}
-                style={{height: '100%', marginRight: 10}}>
-                <Icon name="menu" size={25} color="#FFF" />
+                onPress={() => this.props.navigation.navigate('Home')}
+                style={{
+                  height: '100%',
+                  marginRight: 10,
+                  padding: 8,
+                  borderRadius: 40,
+                  backgroundColor: '#fff',
+                }}>
+                <Icon name="home-outline" size={25} color="#32899F" />
               </TouchableOpacity>
             </Right>
           </Header>
@@ -289,14 +300,17 @@ export default class MyStudents extends Component {
           />
           {searchBtn}
         </View>
-      </Drawer>
+        <SideBar navigator={this.props.navigation} />
+      </>
     );
   }
 }
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    // flex: 1,
+    width,
+    height: (height * 90) / 100,
     backgroundColor: '#e3e3e3',
   },
   title: {
