@@ -147,7 +147,7 @@ class Home extends Component {
             textStyle={styles.text}
             activeTextStyle={{color: '#FFF', fontFamily: 'Tajawal-Regular'}}
             activeTabStyle={styles.active}
-            heading="اخبار القطاع">
+            heading="الأخبار">
             <Feeds navigation={this.props.navigation} />
           </Tab>
           <Tab

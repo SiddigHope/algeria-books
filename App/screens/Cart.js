@@ -130,9 +130,14 @@ export default class MyStudents extends Component {
         if (studentCart != null) {
           const jsonCart = JSON.parse(studentCart);
           let total = 0;
+          const books = [];
           jsonCart.forEach(element => {
+            // console.log('element')
+            // console.log(element)
+            books.push({book_id: element.book_id, price: element.price});
             total += Number(element.price);
           });
+          student.books = books;
           student.total = total;
           whole += total;
           students.push(student);

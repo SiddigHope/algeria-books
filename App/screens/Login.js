@@ -82,22 +82,20 @@ export default class Login extends PureComponent {
   };
 
   componentDidMount() {
-    const OsVer = Platform.constants['Release'];
-    console.log('OsVer');
-    console.log(OsVer);
-    this.setState({OsVer});
     this.connect();
+    this.checkUser();
     // AsyncStorage.removeItem('parentInfo')
+    BackHandler.addEventListener('hardwareBackPress', this.handleBackPress);
     const navigation = this.props.navigation;
     navigation.addListener('focus', () => {
       this.checkUser();
     });
-    BackHandler.addEventListener('hardwareBackPress', this.handleBackPress);
-    this.checkUser();
   }
 
   componentWillUnmount() {
     BackHandler.removeEventListener('hardwareBackPress', this.handleBackPress);
+    const navigation = this.props.navigation;
+    navigation.removeListener('focus');
   }
 
   handleBackPress = () => {
@@ -465,7 +463,7 @@ export default class Login extends PureComponent {
                 <View style={styles.inputView}>
                   <TextInput
                     textAlign="right"
-                    style={[styles.inputText, {fontSize: 24}]}
+                    style={[styles.inputText]}
                     secureTextEntry
                     value={this.state.password}
                     placeholder="كلمة المرور"
@@ -494,10 +492,12 @@ export default class Login extends PureComponent {
               )}
             </TouchableOpacity>
           </View>
-          {/* <Text style={styles.signin} onPress={() => this.openBrowser()}>
-            {' '}
-            {'ليس لديك حساب ؟'}{' '}
-          </Text> */}
+          {this.state.user ? null : (
+            <Text style={styles.signin} onPress={() => this.openBrowser()}>
+              {' '}
+              {'ليس لديك حساب ؟'}{' '}
+            </Text>
+          )}
         </View>
       </KeyboardAvoidingView>
     );
