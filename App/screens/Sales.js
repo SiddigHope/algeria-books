@@ -10,6 +10,7 @@ import {
   TouchableOpacity,
   Pressable,
   StatusBar,
+  Dimensions,
   Image,
 } from 'react-native';
 import AsyncStorage from '@react-native-community/async-storage';
@@ -33,6 +34,7 @@ import SideBar from './../config/SideBar';
 import OnlineSalesComponent from '../Components/OnlineSalesComponent';
 import CashSalesComponent from '../Components/CashSalesComponent';
 
+const {width, height} = Dimensions.get('window');
 export default class Sales extends Component {
   constructor(props) {
     super(props);
@@ -119,53 +121,58 @@ export default class Sales extends Component {
 
   render() {
     return (
-      <View style={styles.container}>
-        <StatusBar backgroundColor="#32899F" />
-        <Header
-          style={{backgroundColor: '#32899F'}}
-          androidStatusBarColor="#32899F">
-          <Left style={{flexDirection: 'row', flex: 1, marginLeft: 15}}></Left>
-          <Body>
-            <Text style={styles.title}>{'المشتريات'}</Text>
-          </Body>
-          <Right style={{marginRights: 15}}></Right>
-        </Header>
-        <Tabs
-          renderTabBar={this.renderTabBar}
-          initialPage={1}
-          tabBarUnderlineStyle={{height: 2, backgroundColor: '#fff'}}
-          tabBarPosition="overlayTop">
-          <Tab
-            tabStyle={styles.tabStyle}
-            textStyle={styles.text}
-            activeTextStyle={{color: '#FFF', fontFamily: 'Tajawal-Regular'}}
-            activeTabStyle={styles.active}
-            heading="دفع نقدي">
-            <CashSalesComponent
-              data={this.state.cashOrders}
-              navigation={this.props.navigation}
-            />
-          </Tab>
-          <Tab
-            tabStyle={styles.tabStyle}
-            textStyle={styles.text}
-            activeTextStyle={{color: '#FFF', fontFamily: 'Tajawal-Regular'}}
-            activeTabStyle={styles.active}
-            heading="البطاقة الذهبية">
-            <OnlineSalesComponent
-              data={this.state.onlineOrders}
-              navigation={this.props.navigation}
-            />
-          </Tab>
-        </Tabs>
-      </View>
+      <>
+        <View style={styles.container}>
+          <StatusBar backgroundColor="#32899F" />
+          <Header
+            style={{backgroundColor: '#32899F'}}
+            androidStatusBarColor="#32899F">
+            <Left
+              style={{flexDirection: 'row', flex: 1, marginLeft: 15}}></Left>
+            <Body>
+              <Text style={styles.title}>{'المشتريات'}</Text>
+            </Body>
+            <Right style={{marginRights: 15}}></Right>
+          </Header>
+          <Tabs
+            renderTabBar={this.renderTabBar}
+            initialPage={1}
+            tabBarUnderlineStyle={{height: 2, backgroundColor: '#fff'}}
+            tabBarPosition="overlayTop">
+            <Tab
+              tabStyle={styles.tabStyle}
+              textStyle={styles.text}
+              activeTextStyle={{color: '#FFF', fontFamily: 'Tajawal-Regular'}}
+              activeTabStyle={styles.active}
+              heading="دفع نقدي">
+              <CashSalesComponent
+                data={this.state.cashOrders}
+                navigation={this.props.navigation}
+              />
+            </Tab>
+            <Tab
+              tabStyle={styles.tabStyle}
+              textStyle={styles.text}
+              activeTextStyle={{color: '#FFF', fontFamily: 'Tajawal-Regular'}}
+              activeTabStyle={styles.active}
+              heading="البطاقة الذهبية">
+              <OnlineSalesComponent
+                data={this.state.onlineOrders}
+                navigation={this.props.navigation}
+              />
+            </Tab>
+          </Tabs>
+        </View>
+        <SideBar navigator={this.props.navigation} />
+      </>
     );
   }
 }
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    width,
+    height: (height * 90) / 100,
     backgroundColor: '#e3e3e3',
   },
   title: {

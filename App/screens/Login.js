@@ -82,22 +82,20 @@ export default class Login extends PureComponent {
   };
 
   componentDidMount() {
-    const OsVer = Platform.constants['Release'];
-    console.log('OsVer');
-    console.log(OsVer);
-    this.setState({OsVer});
     this.connect();
+    this.checkUser();
     // AsyncStorage.removeItem('parentInfo')
+    BackHandler.addEventListener('hardwareBackPress', this.handleBackPress);
     const navigation = this.props.navigation;
     navigation.addListener('focus', () => {
       this.checkUser();
     });
-    BackHandler.addEventListener('hardwareBackPress', this.handleBackPress);
-    this.checkUser();
   }
 
   componentWillUnmount() {
     BackHandler.removeEventListener('hardwareBackPress', this.handleBackPress);
+    const navigation = this.props.navigation;
+    navigation.removeListener('focus');
   }
 
   handleBackPress = () => {
@@ -233,6 +231,7 @@ export default class Login extends PureComponent {
   cancelSignin = () => {
     this.setState({
       id: '',
+      password: '',
       setModalVisible: false,
       ActivityIndicator: false,
     });
@@ -240,139 +239,72 @@ export default class Login extends PureComponent {
 
   confirmSignin = async () => {
     if (this.state.userData != '') {
-      if (this.state.OsVer <= '10') {
-        const id = await DeviceInfo.getUniqueId();
-        console.log(id);
-        ///////////////////////////////////////
-        if (this.state.prev == '' || this.state.prev == id) {
-          RNFetchBlob.fetch(
-            'POST',
-            mainDomain + 'insertParentImei.php',
-            {
-              // Authorization: "Bearer access-token",
-              // otherHeader: "foo",
-              'Content-Type': 'multipart/form-data',
-            },
-            [
-              // to send data
-              {name: 'imei', data: String(id)},
-              {name: 'parentId', data: this.state.id.toString()},
-            ],
-          )
-            .then(res => {
-              console.log(res.data);
-              const data = JSON.parse(res.data);
-              const token = data.data; //"Don't touch this shit"
-              const jwt = jwt_decode(token);
-              const full = JSON.parse(jwt.data.data);
-              // console.log(full)
-              if (
-                full.message == 'inserted' ||
-                this.state.user ||
-                this.state.prev == id
-              ) {
-                this.state.userData.password = this.state.password;
-                AsyncStorage.setItem(
-                  'parentInfo',
-                  JSON.stringify(this.state.userData),
-                ).then(() => {
-                  this.setState({
-                    setModalVisible: false,
-                    ActivityIndicator: false,
-                  });
-                });
-                AsyncStorage.setItem('parentId', this.state.id);
-              } else {
+      const id = await DeviceInfo.getUniqueId();
+      console.log(id);
+      ///////////////////////////////////////
+      if (this.state.prev == '' || this.state.prev == id) {
+        RNFetchBlob.fetch(
+          'POST',
+          mainDomain + 'insertParentImei.php',
+          {
+            // Authorization: "Bearer access-token",
+            // otherHeader: "foo",
+            'Content-Type': 'multipart/form-data',
+          },
+          [
+            // to send data
+            {name: 'imei', data: String(id)},
+            {name: 'parentId', data: this.state.id.toString()},
+          ],
+        )
+          .then(res => {
+            console.log(res.data);
+            const data = JSON.parse(res.data);
+            const token = data.data; //"Don't touch this shit"
+            const jwt = jwt_decode(token);
+            const full = JSON.parse(jwt.data.data);
+            // console.log(full)
+            if (
+              full.message == 'inserted' ||
+              this.state.user ||
+              this.state.prev == id
+            ) {
+              this.state.userData.password = this.state.password;
+              AsyncStorage.setItem(
+                'parentInfo',
+                JSON.stringify(this.state.userData),
+              ).then(() => {
                 this.setState({
-                  ActivityIndicator: false,
                   setModalVisible: false,
-                  id: '',
+                  ActivityIndicator: false,
                 });
-                Alert.alert(' ', 'لايمكنك تسجيل الدخول من هاتف اخر');
-              }
-            })
-            .catch(err => {
+              });
+              this.goHome();
+              AsyncStorage.setItem('parentId', this.state.id);
+            } else {
               this.setState({
                 ActivityIndicator: false,
+                setModalVisible: false,
+                id: '',
+                password: '',
               });
-              console.log('error response111');
-              console.log(err);
-            });
-        } else {
-          this.setState({
-            ActivityIndicator: false,
-          });
-          Alert.alert(' ', 'عدم تطابق الهاتف');
-        }
-        ///////////////////////////////////////
-      } else {
-        IMEI.getImei().then(imeiList => {
-          if (this.state.prev == '' || this.state.prev == imeiList[0]) {
-            RNFetchBlob.fetch(
-              'POST',
-              mainDomain + 'insertParentImei.php',
-              {
-                // Authorization: "Bearer access-token",
-                // otherHeader: "foo",
-                'Content-Type': 'multipart/form-data',
-              },
-              [
-                // to send data
-                {name: 'imei', data: String(imeiList[0])},
-                {name: 'parentId', data: this.state.id.toString()},
-              ],
-            )
-              .then(res => {
-                console.log(res.data);
-                const data = JSON.parse(res.data);
-                const token = data.data; //"Don't touch this shit"
-                const jwt = jwt_decode(token);
-                const full = JSON.parse(jwt.data.data);
-                console.log(full.message);
-                console.log(this.state);
-                console.log(imeiList[0]);
-                if (
-                  full.message == 'inserted' ||
-                  this.state.user ||
-                  this.state.prev == imeiList[0]
-                ) {
-                  // this.props.navigation.navigate('Tabs');
-                  this.state.userData.password = this.state.password;
-                  AsyncStorage.setItem(
-                    'parentInfo',
-                    JSON.stringify(this.state.userData),
-                  ).then(() => {
-                    this.setState({
-                      setModalVisible: false,
-                      ActivityIndicator: false,
-                    });
-                  });
-                  this.goHome();
-                  AsyncStorage.setItem('parentId', this.state.id);
-                } else {
-                  this.setState({
-                    ActivityIndicator: false,
-                    setModalVisible: false,
-                    id: '',
-                  });
-                  Alert.alert(' ', 'لايمكنك تسجيل الدخول من هاتف اخر');
-                }
-              })
-              .catch(err => {
-                this.setState({
-                  ActivityIndicator: false,
-                });
-                console.log('error response222');
-                console.log(err);
-              });
-          } else {
+              Alert.alert(' ', 'لايمكنك تسجيل الدخول من هاتف اخر');
+            }
+          })
+          .catch(err => {
             this.setState({
               ActivityIndicator: false,
             });
-            Alert.alert(' ', 'عدم تطابق الهاتف');
-          }
+            console.log('error response111');
+            console.log(err);
+          });
+      } else {
+        this.setState({
+          ActivityIndicator: false,
         });
+        Alert.alert(' ', 'عدم تطابق الهاتف');
       }
+      ///////////////////////////////////////
     } else {
       this.setState({
         ActivityIndicator: false,
@@ -413,7 +345,7 @@ export default class Login extends PureComponent {
                   fontFamily: 'Tajawal-Bold',
                   marginBottom: 10,
                 }}>
-                {'تأكيد الهوية'}
+                {'تأكيد هوية الولي'}
               </Text>
               <View style={styles.rowContainer}>
                 <View style={styles.rowData}>
@@ -435,20 +367,10 @@ export default class Login extends PureComponent {
 
               <View style={styles.rowContainer}>
                 <View style={styles.rowData}>
-                  <Text style={styles.textTitle}> {'رقم المحمول'} </Text>
+                  <Text style={styles.textTitle}> {'رقم الهاتف المحمول'} </Text>
                   <Text style={styles.content}>
-                    {' '}
+                    {'0'}
                     {this.state.userData.TelMobileTutr}{' '}
-                  </Text>
-                </View>
-              </View>
-
-              <View style={styles.rowContainer}>
-                <View style={styles.rowData}>
-                  <Text style={styles.textTitle}> {'رمز الولي'} </Text>
-                  <Text style={styles.content}>
-                    {' '}
-                    {this.state.userData.MatriculeParent}{' '}
                   </Text>
                 </View>
               </View>
@@ -515,7 +437,7 @@ export default class Login extends PureComponent {
               style={styles.loginBanner}
             />
             <Image
-              source={require('./../Assets/bookStoreCircle.png')}
+              source={require('./../Assets/abdes.png')}
               style={styles.loginCircle}
             />
           </View>
@@ -541,7 +463,8 @@ export default class Login extends PureComponent {
                 <View style={styles.inputView}>
                   <TextInput
                     textAlign="right"
-                    style={styles.inputText}
+                    style={[styles.inputText]}
+                    secureTextEntry
                     value={this.state.password}
                     placeholder="كلمة المرور"
                     placeholderTextColor="#32899F"
@@ -569,10 +492,12 @@ export default class Login extends PureComponent {
               )}
             </TouchableOpacity>
           </View>
-          <Text style={styles.signin} onPress={() => this.openBrowser()}>
-            {' '}
-            {'ليس لديك حساب ؟'}{' '}
-          </Text>
+          {this.state.user ? null : (
+            <Text style={styles.signin} onPress={() => this.openBrowser()}>
+              {' '}
+              {'ليس لديك حساب ؟'}{' '}
+            </Text>
+          )}
         </View>
       </KeyboardAvoidingView>
     );
@@ -659,7 +584,7 @@ const styles = StyleSheet.create({
   },
   modal: {
     backgroundColor: '#FFF',
-    height: '55%',
+    height: '48%',
     width: '90%',
     borderRadius: 30,
     padding: 20,

@@ -125,9 +125,15 @@ class Home extends Component {
           </Body>
           <Right style={{marginRights: 15}}>
             <TouchableOpacity
-              onPress={() => this.openDrawer()}
-              style={{height: '100%', marginRight: 10}}>
-              <Icon name="menu" size={25} color="#FFF" />
+              onPress={() => this.props.navigation.navigate('MyStudents')}
+              style={{
+                height: '100%',
+                marginRight: 10,
+                padding: 8,
+                borderRadius: 40,
+                backgroundColor: '#fff',
+              }}>
+              <Icon name="account-outline" size={25} color="#32899F" />
             </TouchableOpacity>
           </Right>
         </Header>
@@ -141,7 +147,7 @@ class Home extends Component {
             textStyle={styles.text}
             activeTextStyle={{color: '#FFF', fontFamily: 'Tajawal-Regular'}}
             activeTabStyle={styles.active}
-            heading="اخبار القطاع">
+            heading="الأخبار">
             <Feeds navigation={this.props.navigation} />
           </Tab>
           <Tab

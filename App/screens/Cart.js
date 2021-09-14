@@ -7,6 +7,7 @@ import {
   View,
   FlatList,
   Modal,
+  Dimensions,
   TouchableOpacity,
   Pressable,
 } from 'react-native';
@@ -16,6 +17,9 @@ import jwt_decode from 'jwt-decode';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import _ from 'lodash';
 import {mainDomain} from '../config/var';
+import SideBar from '../config/SideBar';
+
+const {width, height} = Dimensions.get('window');
 
 export default class MyStudents extends Component {
   constructor(props) {
@@ -38,7 +42,7 @@ export default class MyStudents extends Component {
     this.checkUser();
     const navigation = this.props.navigation;
     navigation.addListener('focus', () => {
-      this.checkUser();
+      this.getStudents();
     });
   }
 
@@ -126,9 +130,14 @@ export default class MyStudents extends Component {
         if (studentCart != null) {
           const jsonCart = JSON.parse(studentCart);
           let total = 0;
+          const books = [];
           jsonCart.forEach(element => {
+            // console.log('element')
+            // console.log(element)
+            books.push({book_id: element.book_id, price: element.price});
             total += Number(element.price);
           });
+          student.books = books;
           student.total = total;
           whole += total;
           students.push(student);
@@ -176,90 +185,94 @@ export default class MyStudents extends Component {
 
   render() {
     return (
-      <View style={styles.container}>
-        <TouchableOpacity
-          onPress={() => {
-            console.log('cartItems');
-            this.props.navigation.navigate('CartItems');
-          }}
-          style={styles.cartCont}>
-          <Icon name="cart-outline" size={30} color="rgba(50,137,159,1)" />
-        </TouchableOpacity>
+      <>
+        <View style={styles.container}>
+          <TouchableOpacity
+            onPress={() => {
+              console.log('cartItems');
+              this.props.navigation.navigate('CartItems');
+            }}
+            style={styles.cartCont}>
+            <Icon name="cart-outline" size={30} color="rgba(50,137,159,1)" />
+          </TouchableOpacity>
 
-        <View
-          style={[
-            styles.newTopContainer,
-            {backgroundColor: '#e3e3e3', height: 50},
-          ]}>
-          <View style={[styles.rowTopContainer]}>
-            <View style={styles.rowTopData}>
-              <Text style={styles.textTitle}> {'دفع فردي'} </Text>
-            </View>
-            <View style={styles.rowTopData}>
-              <Text style={styles.textTitle}> {'مبلغ الكتب'} </Text>
-            </View>
-            <View style={styles.rowTopData}>
-              <Text style={styles.textTitle}> {'الاسم'} </Text>
+          <View
+            style={[
+              styles.newTopContainer,
+              {backgroundColor: '#e3e3e3', height: 50},
+            ]}>
+            <View style={[styles.rowTopContainer]}>
+              <View style={styles.rowTopData}>
+                <Text style={styles.textTitle}> {'دفع فردي'} </Text>
+              </View>
+              <View style={styles.rowTopData}>
+                <Text style={styles.textTitle}> {'مبلغ الكتب'} </Text>
+              </View>
+              <View style={styles.rowTopData}>
+                <Text style={styles.textTitle}> {'الاسم'} </Text>
+              </View>
             </View>
           </View>
-        </View>
-        <FlatList
-          data={this.state.students}
-          keyExtractor={(item, index) => index.toString()}
-          showsVerticalScrollIndicator={false}
-          ListFooterComponent={this._listFooter}
-          renderItem={(item, index) => {
-            let backgroundColor = '#FFF';
-            let elevation = 3;
-            if (item.index % 2 == 1) {
-              backgroundColor = '#FFF';
-              elevation = 0;
-            }
-            return (
-              <>
-                <View style={[styles.newContainer, {backgroundColor}]}>
-                  <View style={[styles.rowContainer]}>
-                    <TouchableOpacity
-                      onPress={() =>
-                        this.props.navigation.navigate('Payment', {
-                          item: item.item,
-                          type: '1',
-                          total: item.item.total,
-                          students: item.item,
-                        })
-                      }
-                      style={styles.rowData}>
-                      <Icon
-                        name="account-cash-outline"
-                        color="#81c784"
-                        size={25}
-                      />
-                    </TouchableOpacity>
-                    <Pressable style={styles.rowData}>
-                      <Text style={styles.content}>
-                        {' '}
-                        {item.item.total + ' دجـ'}{' '}
-                      </Text>
-                    </Pressable>
-                    <Pressable style={styles.rowData}>
-                      <Text style={styles.content}>
-                        {item.item.PrenomArElv}
-                      </Text>
-                    </Pressable>
+          <FlatList
+            data={this.state.students}
+            keyExtractor={(item, index) => index.toString()}
+            showsVerticalScrollIndicator={false}
+            ListFooterComponent={this._listFooter}
+            renderItem={(item, index) => {
+              let backgroundColor = '#FFF';
+              let elevation = 3;
+              if (item.index % 2 == 1) {
+                backgroundColor = '#FFF';
+                elevation = 0;
+              }
+              return (
+                <>
+                  <View style={[styles.newContainer, {backgroundColor}]}>
+                    <View style={[styles.rowContainer]}>
+                      <TouchableOpacity
+                        onPress={() =>
+                          this.props.navigation.navigate('Payment', {
+                            item: item.item,
+                            type: '1',
+                            total: item.item.total,
+                            students: item.item,
+                          })
+                        }
+                        style={styles.rowData}>
+                        <Icon
+                          name="account-cash-outline"
+                          color="#81c784"
+                          size={25}
+                        />
+                      </TouchableOpacity>
+                      <Pressable style={styles.rowData}>
+                        <Text style={styles.content}>
+                          {' '}
+                          {item.item.total + ' دجـ'}{' '}
+                        </Text>
+                      </Pressable>
+                      <Pressable style={styles.rowData}>
+                        <Text style={styles.content}>
+                          {item.item.PrenomArElv}
+                        </Text>
+                      </Pressable>
+                    </View>
                   </View>
-                </View>
-              </>
-            );
-          }}
-        />
-      </View>
+                </>
+              );
+            }}
+          />
+        </View>
+        <SideBar navigator={this.props.navigation} />
+      </>
     );
   }
 }
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    width,
+    height: (height * 82.5) / 100,
     backgroundColor: '#e3e3e3',
   },
   footer: {

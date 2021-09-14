@@ -20,94 +20,52 @@ const {width, height} = Dimensions.get('window');
 
 export default SideBar = props => {
   const signout = async () => {
+    AsyncStorage.clear();
     props.navigator.navigate('Login', {navigation: props.navigator});
   };
 
   return (
-    <ScrollView style={{backgroundColor: '#e3e3e3'}}>
-      <View
-        style={{
-          paddingVertical: 16,
-          paddingTop: 20,
-          backgroundColor: '#32899F',
-          height: height - (65 * height) / 100,
-        }}>
-        <Text style={styles.name}>
-          {'الجمهورية الجزائرية الديمقراطية الشعبية'}
+    <View style={styles.container}>
+      <TouchableOpacity
+        style={styles.item}
+        onPress={() =>
+          props.navigator.navigate('Cart', {
+            navigation: props.navigator,
+          })
+        }>
+        <Icon style={styles.icon} name="cart-outline" color="#000" size={20} />
+        <Text style={{fontFamily: 'Tajawal-Regular'}}>
+          {'  سلة المستريات '}
         </Text>
-        <Image
-          source={require('./../Assets/hilal.png')}
-          style={styles.profile}
-        />
-        <Text style={styles.uname}>{'وزارة التربية الوطنية'}</Text>
-      </View>
+      </TouchableOpacity>
 
-      <View style={styles.container}>
-        <List>
-          <ListItem>
-            <Body>
-              <TouchableOpacity
-                style={styles.item}
-                onPress={() =>
-                  props.navigator.navigate('Cart', {
-                    navigation: props.navigator,
-                  })
-                }>
-                <Text style={{fontFamily: 'Tajawal-Regular'}}>
-                  {'  سلة المستريات '}
-                </Text>
-                <Icon
-                  style={styles.icon}
-                  name="cart-outline"
-                  color="#000"
-                  size={20}
-                />
-              </TouchableOpacity>
-            </Body>
-          </ListItem>
+      <TouchableOpacity
+        style={styles.item}
+        onPress={() =>
+          props.navigator.navigate('Sales', {
+            navigation: props.navigator,
+          })
+        }>
+        <Icon style={styles.icon} name="sale" color="#000" size={20} />
+        <Text style={{fontFamily: 'Tajawal-Regular'}}>{'  المشتريات '}</Text>
+      </TouchableOpacity>
 
-          <ListItem>
-            <Body>
-              <TouchableOpacity
-                style={styles.item}
-                onPress={() =>
-                  props.navigator.navigate('Sales', {
-                    navigation: props.navigator,
-                  })
-                }>
-                <Text style={{fontFamily: 'Tajawal-Regular'}}>
-                  {'  المشتريات '}
-                </Text>
-                <Icon style={styles.icon} name="sale" color="#000" size={20} />
-              </TouchableOpacity>
-            </Body>
-          </ListItem>
-
-          <ListItem>
-            <Body>
-              <TouchableOpacity onPress={() => signout()} style={styles.item}>
-                <Text style={{fontFamily: 'Tajawal-Regular'}}>
-                  {' '}
-                  {'تسجيل خروج'}{' '}
-                </Text>
-                <Icon
-                  style={styles.icon}
-                  name="logout"
-                  color="#000"
-                  size={20}
-                />
-              </TouchableOpacity>
-            </Body>
-          </ListItem>
-        </List>
-      </View>
-    </ScrollView>
+      <TouchableOpacity onPress={() => signout()} style={styles.item}>
+        <Icon style={styles.icon} name="logout" color="#000" size={20} />
+        <Text style={{fontFamily: 'Tajawal-Regular'}}> {'تسجيل خروج'} </Text>
+      </TouchableOpacity>
+    </View>
   );
 };
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    backgroundColor: '#e3e3e3',
+    width,
+    height: (height * 10) / 100,
+    backgroundColor: '#FFF',
+    // position: 'absolute',
+    flexDirection: 'row-reverse',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
   icon: {
     marginRight: 5,
@@ -134,19 +92,7 @@ const styles = StyleSheet.create({
   },
   item: {
     flex: 1,
-    flexDirection: 'row',
-    paddingHorizontal: 10,
+    // paddingHorizontal: 10,
     alignItems: 'center',
-    justifyContent: 'flex-end',
-  },
-  badge: {
-    fontFamily: 'Tajawal-Regular',
-    backgroundColor: '#81c784',
-    height: 25,
-    width: 25,
-    borderRadius: 13,
-    textAlign: 'center',
-    marginRight: 10,
-    textAlignVertical: 'center',
   },
 });

@@ -40,7 +40,7 @@ export default class Payment extends Component {
     this.state = {
       total: this.props.route.params.total,
       user: [],
-      payment: '2',
+      payment: '1',
       activityIndicator: false,
       items: [],
       count: '',
@@ -49,6 +49,7 @@ export default class Payment extends Component {
       bookCounts: 0,
       showSuccessModal: false,
       asyncKey: [],
+      studentsList: [],
     };
   }
 
@@ -59,7 +60,6 @@ export default class Payment extends Component {
   }
 
   setItemsAsArrayOfIds = async () => {
-    // console.log(this.props.route.params.item == 'card');
     let bookCounts = 0;
     let bookLists = [];
     let studentsList = [];
@@ -111,88 +111,18 @@ export default class Payment extends Component {
     }
   };
 
-  onPressPay = async () => {
+  onPressPay = async type => {
     // online payment
-    // console.log(this.state.bookCounts);
-    // console.log(this.state.bookLists);
-    // console.log(this.state.studentsList);
-    // return;
-    // body: JSON.stringify({
-    //   parentId: this.state.user.MatriculeParent,
-    //   books: JSON.stringify(this.state.bookLists),
-    //   paymentType: this.props.route.params.type,
-    //   total: this.state.total,
-    //   MatriculeElvFK: this.state.studentsList,
-    //   count: this.state.bookCounts,
-    // }),
     this.setState({
       activityIndicator: true,
     });
+    // console.log(this.state.studentsList)
     const formData = new FormData();
     formData.append('parentId', String(this.state.user.MatriculeParent));
     formData.append('books', JSON.stringify(this.state.bookLists));
-    formData.append('paymentType', '1');
+    formData.append('paymentType', type);
     formData.append('total', this.state.total);
-    formData.append('MatriculeElvFK', JSON.stringify(this.state.studentsList));
-    formData.append('count', this.state.bookCounts);
-    const requestOptions = {
-      method: 'POST',
-      header: {
-        'Content-Type': 'multipart/form-data',
-        // 'Content-Type': 'application/json',
-      },
-      body: formData,
-    };
-    try {
-      fetch(mainDomain + 'bookOrder.php', requestOptions)
-        .then(response => response.json())
-        .then(data => {
-          //   console.log(data.about);
-          const token = data.data; //"Don't touch this shit"
-          const jwt = jwt_decode(token);
-          const full = JSON.parse(jwt.data.data);
-          if (full.message == 'inserted') {
-            this.setState({
-              showSuccessModal: true,
-              activityIndicator: false,
-            });
-            this.state.asyncKey.forEach(element => {
-              AsyncStorage.removeItem(element.key);
-            });
-            AsyncStorage.removeItem('cart');
-            setTimeout(() => {
-              this.props.navigation.navigate('MyStudents');
-            }, 3000);
-          } else {
-            this.setState({
-              activityIndicator: false,
-            });
-            ToastAndroid.show(
-              'اعد المحاولة مرة اخري! حدث خطأ ما ...',
-              ToastAndroid.LONG,
-            );
-          }
-        });
-    } catch (error) {
-      this.setState({
-        activityIndicator: false,
-      });
-      console.log(error);
-    }
-  };
-
-  completePayment = async () => {
-    // cash payment
-    // console.log('cash')
-    this.setState({
-      activityIndicator: true,
-    });
-    const formData = new FormData();
-    formData.append('parentId', String(this.state.user.MatriculeParent));
-    formData.append('books', JSON.stringify(this.state.bookLists));
-    formData.append('paymentType', '0');
-    formData.append('total', this.state.total);
-    formData.append('MatriculeElvFK', JSON.stringify(this.state.studentsList));
+    formData.append('MatriculeElvFK', this.state.studentsList[0].MatriculeElv);
     formData.append('count', this.state.bookCounts);
     const requestOptions = {
       method: 'POST',
@@ -211,14 +141,144 @@ export default class Payment extends Component {
           const jwt = jwt_decode(token);
           const full = JSON.parse(jwt.data.data);
           if (full.message == 'inserted') {
+            // this.setState({
+            //   showSuccessModal: true,
+            //   activityIndicator: false,
+            // });
+            this.state.asyncKey.forEach(element => {
+              AsyncStorage.removeItem(element.key);
+            });
+            // AsyncStorage.removeItem('cart');
+            // setTimeout(() => {
+            //   this.props.navigation.navigate('MyStudents');
+            // }, 3000);
+            this.insertIntoOrder('0');
+          } else {
+            this.setState({
+              activityIndicator: false,
+            });
+            ToastAndroid.show(
+              'اعد المحاولة مرة اخري! حدث خطأ ما ...',
+              ToastAndroid.LONG,
+            );
+          }
+        })
+        .catch(error => {
+          console.log(error);
+          ToastAndroid.show('حدث خطأ ما, اعد المحاولة', ToastAndroid.LONG);
+          this.setState({activityIndicator: false});
+        });
+    } catch (error) {
+      this.setState({
+        activityIndicator: false,
+      });
+      console.log(error);
+    }
+  };
+
+  completePayment = async type => {
+    // cash payment
+    // console.log('cash')
+    this.setState({
+      activityIndicator: true,
+    });
+
+    const students = this.props.route.params.students;
+    students.forEach((iterated, index) => {
+      console.log(iterated);
+      ////////////////////////////////////////////////////////////////
+
+      const formData = new FormData();
+      formData.append('parentId', String(this.state.user.MatriculeParent));
+      formData.append('books', JSON.stringify(iterated.books));
+      formData.append('paymentType', type);
+      formData.append('total', iterated.total);
+      formData.append('MatriculeElvFK', iterated.MatriculeElv);
+      formData.append('count', iterated.books.length);
+      const requestOptions = {
+        method: 'POST',
+        header: {
+          'Content-Type': 'multipart/form-data',
+          // 'Content-Type': 'application/json',
+        },
+        body: formData,
+      };
+      try {
+        fetch(mainDomain + 'bookOrder.php', requestOptions)
+          .then(response => response.json())
+          .then(data => {
+            console.log(data);
+            const token = data.data; //"Don't touch this shit"
+            const jwt = jwt_decode(token);
+            const full = JSON.parse(jwt.data.data);
+            if (full.message == 'inserted') {
+              this.state.asyncKey.forEach(element => {
+                AsyncStorage.removeItem(element.key);
+              });
+              if (index == this.state.studentsList.length - 1) {
+                // this.setState({
+                //   showSuccessModal: true,
+                //   activityIndicator: false,
+                // });
+                AsyncStorage.removeItem('cart');
+                // setTimeout(() => {
+                //   this.props.navigation.navigate('MyStudents');
+                // }, 3000);
+                this.insertIntoOrder('1');
+              }
+            } else {
+              this.setState({
+                activityIndicator: false,
+              });
+              ToastAndroid.show(
+                'اعد المحاولة مرة اخري! حدث خطأ ما ...',
+                ToastAndroid.LONG,
+              );
+            }
+          })
+          .catch(error => {
+            console.log(error);
+            ToastAndroid.show('حدث خطأ ما, اعد المحاولة', ToastAndroid.LONG);
+            this.setState({activityIndicator: false});
+          });
+      } catch (error) {
+        this.setState({
+          activityIndicator: false,
+        });
+        console.log(error);
+      }
+
+      ////////////////////////////////////////////////////////////////
+    });
+  };
+
+  insertIntoOrder = type => {
+    const formData = new FormData();
+    formData.append('parentId', String(this.state.user.MatriculeParent));
+    formData.append('status', type);
+    formData.append('total', this.state.total);
+    const requestOptions = {
+      method: 'POST',
+      header: {
+        'Content-Type': 'multipart/form-data',
+        // 'Content-Type': 'application/json',
+      },
+      body: formData,
+    };
+    try {
+      fetch(mainDomain + 'insertIntoOrder.php', requestOptions)
+        .then(response => response.json())
+        .then(data => {
+          console.log('data');
+          console.log(data);
+          const token = data.data; //"Don't touch this shit"
+          const jwt = jwt_decode(token);
+          const full = JSON.parse(jwt.data.data);
+          if (full.message == 'inserted') {
             this.setState({
               showSuccessModal: true,
               activityIndicator: false,
             });
-            this.state.asyncKey.forEach(element => {
-              AsyncStorage.removeItem(element.key);
-            });
-            AsyncStorage.removeItem('cart');
             setTimeout(() => {
               this.props.navigation.navigate('MyStudents');
             }, 3000);
@@ -231,6 +291,11 @@ export default class Payment extends Component {
               ToastAndroid.LONG,
             );
           }
+        })
+        .catch(error => {
+          console.log(error);
+          ToastAndroid.show('حدث خطأ ما, اعد المحاولة', ToastAndroid.LONG);
+          this.setState({activityIndicator: false});
         });
     } catch (error) {
       this.setState({
@@ -348,11 +413,12 @@ export default class Payment extends Component {
             />
             <Text style={styles.rowDataValue}>{'طريقة الدفع'}</Text>
             <RadioButtonRN
-              selectedBtn={payment =>
+              selectedBtn={payment => {
                 this.setState({
                   payment: payment.value,
-                })
-              }
+                });
+                console.log(payment.value);
+              }}
               style={{flexDirection: 'row'}}
               boxStyle={styles.boxStyle}
               textStyle={{marginHorizontal: 3, fontFamily: 'Tajawal-Regular'}}
@@ -364,9 +430,9 @@ export default class Payment extends Component {
         </ScrollView>
         <Pressable
           onPress={() =>
-            this.state.payment == '1'
-              ? this.onPressPay()
-              : this.completePayment()
+            this.state.studentsList.length == 1
+              ? this.onPressPay(this.state.payment == '1' ? '1' : '0')
+              : this.completePayment(this.state.payment == '1' ? '1' : '0')
           }
           style={styles.btn}>
           {this.state.activityIndicator ? (
