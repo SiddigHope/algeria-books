@@ -20,8 +20,11 @@ const {width, height} = Dimensions.get('window');
 
 export default SideBar = props => {
   const signout = async () => {
-    AsyncStorage.clear();
-    props.navigator.navigate('Login', {navigation: props.navigator});
+    // AsyncStorage.clear();
+    props.navigator.navigate('Login', {
+      navigation: props.navigator,
+      login: true,
+    });
   };
 
   return (

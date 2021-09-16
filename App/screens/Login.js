@@ -138,6 +138,9 @@ export default class Login extends PureComponent {
   };
 
   goHome = async () => {
+    this.setState({
+      user: true,
+    });
     this.props.navigation.navigate('MyStudents', {
       navigation: this.props.navigation,
     });
