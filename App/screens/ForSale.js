@@ -29,13 +29,16 @@ class ForSale extends Component {
       id: '',
       dataClone: [],
       cartItemsCount: 0,
+      selectedItems: [],
     };
   }
 
   componentDidMount() {
     this.getCartItems();
     this.checkUser();
-    // AsyncStorage.clear()
+    // const student = this.props.route.params.student
+    // AsyncStorage.removeItem('cart')
+    // AsyncStorage.removeItem(student.MatriculeElv+'cart')
   }
 
   checkUser = async () => {
@@ -69,7 +72,7 @@ class ForSale extends Component {
       [
         // to send data
         {name: 'parentId', data: String(this.state.id)},
-        {name: 'division', data: String(student.FkCdDivisionActl.slice(0, 5))},
+        {name: 'division', data: String(student.FkCdDivisionActl)},
         {name: 'dist', data: String('12')},
       ],
     )
@@ -80,8 +83,8 @@ class ForSale extends Component {
         const jwt = jwt_decode(token);
         const full = JSON.parse(jwt.data.data);
         // const full = data
-        // console.log(this.state.id)
-        // console.log(full);
+        console.log('this.state.id');
+        console.log(full);
         this.setState({
           data: full.message ? [] : full,
           dataClone: full,
@@ -97,6 +100,8 @@ class ForSale extends Component {
   };
 
   getCartItems = async () => {
+    const {selectedItems} = this.state;
+    const student = this.props.route.params.student;
     const cart = await AsyncStorage.getItem('cart');
     if (cart != null) {
       const jsonCart = JSON.parse(cart);
@@ -104,11 +109,24 @@ class ForSale extends Component {
       this.setState({
         cartItemsCount: jsonCart.length,
       });
+      const studentCart = await AsyncStorage.getItem(
+        student.MatriculeElv + 'cart',
+      );
+      if (studentCart != null) {
+        const jsonStudentCart = JSON.parse(studentCart);
+        jsonStudentCart.forEach(element => {
+          // console.log(element);
+          selectedItems.push(element.book_id);
+          this.setState({selectedItems: this.state.selectedItems});
+        });
+      }
     }
   };
 
   addToCart = async item => {
     // AsyncStorage.removeItem('cart')
+    const {selectedItems} = this.state;
+    selectedItems.push(item.book_id);
     const student = this.props.route.params.student;
     item.stdId = student.MatriculeElv;
     item.stdName = student.PrenomArElv;
@@ -148,13 +166,27 @@ class ForSale extends Component {
       // console.log(total.length);
       this.setState({
         cartItemsCount: total.length,
+        selectedItems,
       });
       AsyncStorage.setItem('cart', JSON.stringify(total));
     } else {
       AsyncStorage.setItem('cart', JSON.stringify([item]));
       this.setState({
         cartItemsCount: 1,
+        selectedItems,
       });
+    }
+  };
+
+  checkItem = item => {
+    // console.log(item)
+    const {selectedItems} = this.state;
+    const index = selectedItems.indexOf(item.book_id);
+    if (index > -1) {
+      // this.setState(this.state);
+      return true;
+    } else {
+      return false;
     }
   };
 
@@ -179,32 +211,78 @@ class ForSale extends Component {
           keyExtractor={(item, index) => index.toString()}
           showsVerticalScrollIndicator={false}
           ListHeaderComponent={() => <View style={{height: 20}} />}
-          numColumns={2}
+          numColumns={3}
           renderItem={({item, index}) => {
             // console.log(item)
-            let name = 'files';
             const image =
               item.img != ''
                 ? {uri: assetsDomain + item.img}
                 : require('./../Assets/feed.png');
+
+            let selected = this.checkItem(item);
             return (
               <TouchableWithoutFeedback>
                 <Surface style={styles.surface}>
-                  <ImageBackground source={image} style={styles.img}>
-                    <View style={{justifyContent: 'space-evenly'}}>
-                      <View style={{alignItems: 'flex-start'}}>
-                        <TouchableOpacity
-                          onPress={() => {
-                            console.log('adding item to the cart');
-                            this.addToCart(item);
-                          }}>
+                  <ImageBackground source={image} style={[styles.img]}>
+                    <View
+                      style={{
+                        justifyContent: 'space-between',
+                        width: '100%',
+                      }}>
+                      <View
+                        style={{
+                          alignItems: 'center',
+                          flexDirection: 'row',
+                          justifyContent: 'space-between',
+                        }}>
+                        {/* {selected ? (
                           <Icon
-                            name="cart-plus"
+                            name="circle-off-outline"
+                            color="#ef5350"
+                            size={25}
+                            style={{marginRight: 5}}
+                          />
+                        ) : (
+                          <Icon
+                            name="check-circle"
                             color="rgba(50,137,159,1)"
                             size={25}
                             style={{marginRight: 5}}
                           />
-                        </TouchableOpacity>
+                        )} */}
+                        {selected ? (
+                          <View
+                            style={{
+                              padding: 5,
+                              borderRadius: 50,
+                              backgroundColor: '#FFF',
+                            }}>
+                            <Icon
+                              name="circle-off-outline"
+                              color="#ef5350"
+                              size={20}
+                              // style={{margin: 10}}
+                            />
+                          </View>
+                        ) : (
+                          <TouchableOpacity
+                            style={{
+                              padding: 5,
+                              borderRadius: 50,
+                              backgroundColor: '#FFF',
+                            }}
+                            onPress={() => {
+                              console.log('adding item to the cart');
+                              this.addToCart(item);
+                            }}>
+                            <Icon
+                              name="cart-plus"
+                              color="#81c784"
+                              size={20}
+                              // style={{margin: 10}}
+                            />
+                          </TouchableOpacity>
+                        )}
                       </View>
                     </View>
                     <Text style={styles.name}>{item.price + ' دجـ'}</Text>
@@ -269,32 +347,32 @@ const styles = StyleSheet.create({
     elevation: 5,
     height: 150,
     marginTop: 5,
-    width: 150,
+    width: '30%',
     borderRadius: 10,
-    marginRight: 10,
+    // marginRight: 5,
     marginBottom: 10,
-    marginLeft: 15,
+    marginLeft: 8,
     overflow: 'hidden',
     backgroundColor: '#e3e3e3',
   },
   img: {
     height: 150,
-    width: 150,
+    width: '100%',
     borderRadius: 10,
-    padding: 10,
+    // padding: 10,
     alignItems: 'flex-end',
   },
   name: {
     textAlign: 'center',
     backgroundColor: 'rgba(50,137,159,0.5)',
-    width: (width * 40) / 100,
+    width: '90%',
     fontFamily: 'Tajawal-Regular',
     position: 'absolute',
     bottom: 10,
-    left: 7,
+    left: 5,
+    right: 5,
     borderRadius: 5,
-    color: '#e3e3e3',
-    // fontWeight: 'bold',
+    color: '#FFF',
     fontSize: 16,
   },
   footerContainer: {
