@@ -16,7 +16,7 @@ class SplashScreen extends Component {
 
   componentDidMount() {
     // this.props.navigation.navigate('Tabs', { navigation: this.props.navigation })
-    // this.checkApp();
+    this.checkAuth();
     this.connect();
     // app.initializeApp(firebaseConfig);
   }
@@ -81,7 +81,7 @@ class SplashScreen extends Component {
         });
       } else {
         this.setState({connected: null});
-        this.checkApp()
+        // this.checkApp()
       }
     });
   }

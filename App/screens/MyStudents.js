@@ -267,6 +267,8 @@ export default class MyStudents extends Component {
                 backgroundColor = '#FFF';
                 elevation = 0;
               }
+              // console.log('item.item.LivreGratuitElv')
+              // console.log(item.item.LivreGratuitElv)
               return (
                 <>
                   <View style={[styles.newContainer, {backgroundColor}]}>
@@ -278,7 +280,7 @@ export default class MyStudents extends Component {
                           })
                         }
                         style={styles.rowData}>
-                        <Icon name="bookshelf" color="#444" size={25} />
+                        <Icon name="bookshelf" color={item.item.LivreGratuitElv == "1"?"#81c784":"#444"} size={25} />
                       </TouchableOpacity>
                       <Pressable style={styles.rowData}>
                         <Text style={styles.content}>
