@@ -34,6 +34,13 @@ const payment = [
   },
 ];
 
+const free = [
+  {
+    label: 'كتب مجانية',
+    value: '1',
+  },
+];
+
 export default class Payment extends Component {
   constructor(props) {
     super(props);
@@ -50,6 +57,7 @@ export default class Payment extends Component {
       showSuccessModal: false,
       asyncKey: [],
       studentsList: [],
+      disabled: false,
     };
   }
 
@@ -94,6 +102,11 @@ export default class Payment extends Component {
       if (cart != null) {
         // console.log(this.props.route.params.students);
         const stds = this.props.route.params.students;
+        if (stds.LivreGratuitElv == '1') {
+          this.setState({
+            disabled: true,
+          });
+        }
         const jsonCart = JSON.parse(cart);
         bookCounts = jsonCart.length;
         jsonCart.forEach(element => {
@@ -412,26 +425,48 @@ export default class Payment extends Component {
               onChangeText={phone => this.setState({phone})}
             />
             <Text style={styles.rowDataValue}>{'طريقة الدفع'}</Text>
-            <RadioButtonRN
-              selectedBtn={payment => {
-                this.setState({
-                  payment: payment.value,
-                });
-                console.log(payment.value);
-              }}
-              style={{flexDirection: 'row'}}
-              boxStyle={styles.boxStyle}
-              textStyle={{marginHorizontal: 3, fontFamily: 'Tajawal-Regular'}}
-              initial={Number(this.state.payment)}
-              data={payment}
-              icon={<Icon name="check-circle" size={25} color="#32899F" />}
-            />
+            {this.state.disabled ? (
+                <RadioButtonRN
+                  style={{
+                    flexDirection: 'row',
+                    width: '70%',
+                    alignSelf: 'center',
+                  }}
+                  boxStyle={[styles.boxStyle]}
+                  textStyle={{
+                    marginHorizontal: 3,
+                    fontFamily: 'Tajawal-Regular',
+                  }}
+                  initial={1}
+                  data={free}
+                  icon={<Icon name="check-circle" size={25} color="#32899F" />}
+                />
+            ) : (
+              <RadioButtonRN
+                selectedBtn={payment => {
+                  if (this.state.disabled) {
+                    this.setState({
+                      payment: payment.value,
+                    });
+                    console.log(payment.value);
+                  } else {
+                    console.log(payment.value);
+                  }
+                }}
+                style={[{flexDirection: 'row'}]}
+                boxStyle={styles.boxStyle}
+                textStyle={{marginHorizontal: 3, fontFamily: 'Tajawal-Regular'}}
+                initial={Number(this.state.payment)}
+                data={payment}
+                icon={<Icon name="check-circle" size={25} color="#32899F" />}
+              />
+            )}
           </View>
         </ScrollView>
         <Pressable
           onPress={() =>
             this.state.studentsList.length == 1
-              ? this.onPressPay(this.state.payment == '1' ? '1' : '0')
+              ? this.onPressPay(this.state.disabled?"2":this.state.payment == '1' ? '1' : '0')
               : this.completePayment(this.state.payment == '1' ? '1' : '0')
           }
           style={styles.btn}>

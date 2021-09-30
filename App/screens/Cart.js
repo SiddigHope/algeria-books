@@ -35,6 +35,7 @@ export default class MyStudents extends Component {
       search: false,
       id: '',
       total: 0,
+      disabled: false,
     };
   }
 
@@ -141,8 +142,11 @@ export default class MyStudents extends Component {
           student.total = total;
           whole += total;
           students.push(student);
-          // if (cards.length != 0) {
-          // }
+          if (student.LivreGratuitElv == '1') {
+            this.setState({
+              disabled: true,
+            });
+          }
         }
         count += 1;
         console.log(data);
@@ -157,8 +161,17 @@ export default class MyStudents extends Component {
   _listFooter = (item, index) => {
     console.log('footer');
     // console.log(index);
-    const string = 'الدفع الاجمالي : للمشتريات:';
+    const string = 'اجمالي للمشتريات:';
     const totalPay = 'تأكيد عملية الشراء';
+    if (this.state.disabled) {
+      return (
+        <View style={styles.footer}>
+          <Text style={styles.payAsWhole}>
+            {string + this.state.total + ' دجـ'}
+          </Text>
+        </View>
+      );
+    }
     return (
       <View style={styles.footer}>
         <Text style={styles.payAsWhole}>
