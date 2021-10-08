@@ -33,6 +33,7 @@ import {
 import SideBar from './../config/SideBar';
 import OnlineSalesComponent from '../Components/OnlineSalesComponent';
 import CashSalesComponent from '../Components/CashSalesComponent';
+import FreeSalesComponent from '../Components/FreeSalesComponent';
 
 const {width, height} = Dimensions.get('window');
 export default class Sales extends Component {
@@ -46,6 +47,7 @@ export default class Sales extends Component {
       classes: [],
       onlineOrders: [],
       cashOrders: [],
+      freeOrders: [],
       search: false,
       id: '',
     };
@@ -103,6 +105,7 @@ export default class Sales extends Component {
         this.setState({
           onlineOrders: full.filter(order => order.online_paid == '1'),
           cashOrders: full.filter(order => order.online_paid == '0'),
+          freeOrders: full.filter(order => order.online_paid == '2'),
         });
       })
       .catch(err => {
@@ -124,7 +127,7 @@ export default class Sales extends Component {
       <>
         <View style={styles.container}>
           <StatusBar backgroundColor="#32899F" />
-          <Header
+          {/* <Header
             style={{backgroundColor: '#32899F'}}
             androidStatusBarColor="#32899F">
             <Left
@@ -133,7 +136,7 @@ export default class Sales extends Component {
               <Text style={styles.title}>{'المشتريات'}</Text>
             </Body>
             <Right style={{marginRights: 15}}></Right>
-          </Header>
+          </Header> */}
           <Tabs
             renderTabBar={this.renderTabBar}
             initialPage={1}
@@ -144,7 +147,18 @@ export default class Sales extends Component {
               textStyle={styles.text}
               activeTextStyle={{color: '#FFF', fontFamily: 'Tajawal-Regular'}}
               activeTabStyle={styles.active}
-              heading="دفع نقدي">
+              heading="الكتب المجانية">
+              <FreeSalesComponent
+                data={this.state.freeOrders}
+                navigation={this.props.navigation}
+              />
+            </Tab>
+            <Tab
+              tabStyle={styles.tabStyle}
+              textStyle={styles.text}
+              activeTextStyle={{color: '#FFF', fontFamily: 'Tajawal-Regular'}}
+              activeTabStyle={styles.active}
+              heading="دفع بريدي">
               <CashSalesComponent
                 data={this.state.cashOrders}
                 navigation={this.props.navigation}

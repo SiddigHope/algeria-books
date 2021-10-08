@@ -1,37 +1,21 @@
 import React, {Component} from 'react';
-import {
-  Text,
-  StyleSheet,
-  View,
-  FlatList,
-  TouchableOpacity,
-  Alert,
-} from 'react-native';
-import AsyncStorage from '@react-native-community/async-storage';
-import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import {Text, StyleSheet, View, FlatList} from 'react-native';
 
-export default class CartItems extends Component {
+export default class FreeSalesComponent extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      cartItems: [],
+      days: ['السبت', 'الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس'],
+      day: '',
+      class: 'إختر الفوج',
+      setModalVisible: false,
+      classes: [],
+      students: [],
+      studentsClone: [],
+      search: false,
+      id: '',
     };
   }
-
-  componentDidMount() {
-    this.getCartItems();
-  }
-
-  getCartItems = async () => {
-    const sCart = await AsyncStorage.getItem('cart');
-    if (sCart != null) {
-      this.setState({
-        cartItems: JSON.parse(sCart),
-      });
-      return;
-    }
-    // console.log('sCart');
-  };
 
   separator() {
     return (
@@ -41,66 +25,31 @@ export default class CartItems extends Component {
     );
   }
 
-  deleteItem = async item => {
-    const index = this.state.cartItems.indexOf(item);
-    if (index > -1) {
-      this.state.cartItems.splice(index, 1);
-
-      const sStdItems = await AsyncStorage.getItem(String(item.stdId) + 'cart');
-      if (sStdItems != null) {
-        const stdItems = JSON.parse(sStdItems);
-        // console.log('stdItems.total - item.price')
-        // console.log(stdItems[0].total)
-        // return
-        const stdArray = [];
-        stdItems.forEach(element => {
-          if (element.cart_id != item.cart_id) {
-            stdArray.push(element);
-            AsyncStorage.setItem(
-              String(item.stdId) + 'cart',
-              JSON.stringify(stdArray),
-            );
-          } else if (stdItems.length == 1) {
-            AsyncStorage.setItem(
-              String(item.stdId) + 'cart',
-              JSON.stringify(stdArray),
-            );
-          }
-        });
-        AsyncStorage.setItem('cart', JSON.stringify(this.state.cartItems));
-        this.setState({
-          cartItems: this.state.cartItems,
-        });
-        Alert.alert('تم حذف الكتاب من السلة بنجاح');
-      }
-    }
-  };
-
   render() {
     return (
       <View style={styles.container}>
         <View
           style={[
             styles.newTopContainer,
-            {backgroundColor: '#F9f9f9', height: 50},
+            {backgroundColor: '#e3e3e3', height: 50},
           ]}>
           <View style={[styles.rowTopContainer]}>
+            {/* <View style={styles.rowTopData}>
+              <Text style={styles.textTitle}> {'حالة الطلب'} </Text>
+            </View> */}
             <View style={styles.rowTopData}>
-              <Text style={styles.textTitle}> {'حذف'} </Text>
+              <Text style={styles.textTitle}> {'التاريخ'} </Text>
             </View>
             <View style={styles.rowTopData}>
-              <Text style={styles.textTitle}> {'السعر'} </Text>
+              <Text style={styles.textTitle}> {'الاجمالي'} </Text>
             </View>
             <View style={styles.rowTopData}>
-              <Text style={styles.textTitle}> {'الكتاب'} </Text>
-            </View>
-            <View style={styles.rowTopData}>
-              <Text style={styles.textTitle}> {'التلميذ'} </Text>
+              <Text style={styles.textTitle}> {'رقم العملية'} </Text>
             </View>
           </View>
         </View>
         <FlatList
-          data={this.state.cartItems}
+          data={this.props.data}
           keyExtractor={(item, index) => index.toString()}
           // ItemSeparatorComponent={() => this.separator()}
           renderItem={(item, index) => {
@@ -115,26 +64,24 @@ export default class CartItems extends Component {
               <>
                 <View style={[styles.newContainer, {backgroundColor}]}>
                   <View style={[styles.rowContainer]}>
-                    <TouchableOpacity
-                      onPress={() => this.deleteItem(item.item)}
-                      style={styles.rowData}>
-                      <Icon
-                        name="trash-can-outline"
-                        color="#ef5350"
-                        size={25}
-                      />
-                    </TouchableOpacity>
+                    {/* <View style={styles.rowData}>
+                      {item.item.receipe != '0' ? (
+                        <Icon name="check-bold" color="#81c784" size={25} />
+                      ) : (
+                        <Icon name="close-thick" color="#ef5350" size={25} />
+                      )}
+                    </View> */}
+                    <View style={styles.rowData}>
+                      <Text style={styles.content}>
+                        {' '}
+                        {item.item.date.slice(0, 10)}{' '}
+                      </Text>
+                    </View>
                     <View style={styles.rowData}>
                       <Text style={styles.content}> {item.item.price} </Text>
                     </View>
                     <View style={styles.rowData}>
-                      <Text style={styles.content}>
-                        {' '}
-                        {item.item.arabic_name}{' '}
-                      </Text>
-                    </View>
-                    <View style={styles.rowData}>
-                      <Text style={styles.content}> {item.item.stdName} </Text>
+                      <Text style={styles.content}> {item.item.order_id} </Text>
                     </View>
                   </View>
                 </View>
@@ -150,7 +97,7 @@ export default class CartItems extends Component {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFF',
+    backgroundColor: '#e3e3e3',
   },
   title: {
     fontSize: 20,

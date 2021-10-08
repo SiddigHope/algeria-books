@@ -89,7 +89,7 @@ export default class MyStudents extends Component {
 
   checkUser = async () => {
     const date = new Date(Date.now());
-    console.log(date.getHours());
+    // console.log(date.getHours());
     // AsyncStorage.removeItem('parentInfo')
     const user = await AsyncStorage.getItem('parentInfo');
     const userId = await AsyncStorage.getItem('parentId');
@@ -130,6 +130,8 @@ export default class MyStudents extends Component {
         );
         if (studentCart != null) {
           const jsonCart = JSON.parse(studentCart);
+          console.log('sCartdqwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww');
+          console.log(jsonCart);
           let total = 0;
           const books = [];
           jsonCart.forEach(element => {
@@ -141,7 +143,9 @@ export default class MyStudents extends Component {
           student.books = books;
           student.total = total;
           whole += total;
-          students.push(student);
+          if(total != 0){
+            students.push(student);
+          }
           if (student.LivreGratuitElv == '1') {
             this.setState({
               disabled: true,
@@ -149,7 +153,7 @@ export default class MyStudents extends Component {
           }
         }
         count += 1;
-        console.log(data);
+        // console.log(data);
         this.setState({
           students,
           total: whole,
@@ -159,15 +163,18 @@ export default class MyStudents extends Component {
   };
 
   _listFooter = (item, index) => {
-    console.log('footer');
+    // console.log('footer');
     // console.log(index);
     const string = 'اجمالي للمشتريات:';
     const totalPay = 'تأكيد عملية الشراء';
+    let total = String(this.state.total).split('.');
+    let decimal = total.length > 1 ? total[1].slice(0,2):"00"
+    console.log(total)
     if (this.state.disabled) {
       return (
         <View style={styles.footer}>
           <Text style={styles.payAsWhole}>
-            {string + this.state.total + ' دجـ'}
+            {string + total[0] +"."+decimal + ' دجـ'}
           </Text>
         </View>
       );
@@ -175,7 +182,7 @@ export default class MyStudents extends Component {
     return (
       <View style={styles.footer}>
         <Text style={styles.payAsWhole}>
-          {string + this.state.total + ' دجـ'}
+          {string + total[0] +"."+decimal + ' دجـ'}
         </Text>
         <Pressable
           onPress={() =>
@@ -202,7 +209,7 @@ export default class MyStudents extends Component {
         <View style={styles.container}>
           <TouchableOpacity
             onPress={() => {
-              console.log('cartItems');
+              // console.log('cartItems');
               this.props.navigation.navigate('CartItems');
             }}
             style={styles.cartCont}>

@@ -29,7 +29,7 @@ const payment = [
     value: '1',
   },
   {
-    label: 'دفع نقدي',
+    label: 'دفع بريدي',
     value: '2',
   },
 ];
@@ -445,11 +445,11 @@ export default class Payment extends Component {
               <RadioButtonRN
                 selectedBtn={payment => {
                   if (this.state.disabled) {
+                    console.log(payment.value);
+                  } else {
                     this.setState({
                       payment: payment.value,
                     });
-                    console.log(payment.value);
-                  } else {
                     console.log(payment.value);
                   }
                 }}

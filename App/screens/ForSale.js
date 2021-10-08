@@ -28,6 +28,7 @@ class ForSale extends Component {
       data: [],
       id: '',
       dataClone: [],
+      sold: [],
       cartItemsCount: 0,
       selectedItems: [],
     };
@@ -53,8 +54,69 @@ class ForSale extends Component {
         password: userJson.password,
         ActivityIndicator: false,
       });
-      this.getBooks();
+      this.getSoldBooks();
     }
+  };
+
+  getSoldBooks = async () => {
+    const student = this.props.route.params.student;
+    // console.log(student);
+    RNFetchBlob.fetch(
+      'POST',
+      mainDomain + 'getSoldBooks.php',
+      {
+        // Authorization: "Bearer access-token",
+        // otherHeader: "foo",
+        // 'Content-Type': 'multipart/form-data',
+        'Content-Type': 'application/json',
+      },
+      [
+        // to send data MatriculeElvFK
+        {name: 'MatriculeElvFK', data: String(student.MatriculeElv)},
+        {name: 'dist', data: String('12')},
+      ],
+    )
+      .then(resp => {
+        // console.log(resp.data)
+        const {selectedItems} = this.state;
+        const data = JSON.parse(resp.data);
+        const token = data.data; //"Don't touch this shit"
+        const jwt = jwt_decode(token);
+        const full = JSON.parse(jwt.data.data);
+        // const full = data
+        console.log('this.state.id');
+        // console.log(full);
+        if (full.message || full.length == 0) {
+          this.setState({
+            selectedItems: [],
+          });
+          return;
+        } else {
+          full.forEach(book => {
+            const book_ids = JSON.parse(book.book_list);
+            book['book_list'] = book_ids;
+            book_ids.forEach(element => {
+              const index = selectedItems.indexOf(element.book_id)
+              if(!(index > -1)){
+                selectedItems.push(element.book_id);
+              }
+              console.log(selectedItems)
+            });
+          });
+        }
+        this.setState({
+          selectedItems: selectedItems,
+        });
+        this.getBooks()
+      })
+      .catch(err => {
+        this.setState({
+          setModalVisible: false,
+        });
+        this.getBooks()
+        console.log('error response');
+        console.log(err);
+      });
   };
 
   getBooks = async () => {
@@ -83,8 +145,8 @@ class ForSale extends Component {
         const jwt = jwt_decode(token);
         const full = JSON.parse(jwt.data.data);
         // const full = data
-        console.log('this.state.id');
-        console.log(full);
+        // console.log('this.state.id');
+        // console.log(full);
         this.setState({
           data: full.message ? [] : full,
           dataClone: full,

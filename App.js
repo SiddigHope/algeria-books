@@ -75,13 +75,6 @@ function Stacks() {
         }}
       />
       <Stack.Screen
-        name="Sales"
-        component={Sales}
-        options={{
-          headerShown: false,
-        }}
-      />
-      <Stack.Screen
         name="MyStudents"
         component={MyStudents}
         options={{
@@ -141,6 +134,25 @@ function Stacks() {
             <Text style={{fontFamily: 'Tajawal-Regular', color: '#FFF'}}>
               {' '}
               {'الكتب المتاحة'}{' '}
+            </Text>
+          ),
+        }}
+      />
+      <Stack.Screen
+        name="Sales"
+        component={Sales}
+        options={{
+          headerShown: true,
+          // headerTitleAlign:'center',
+          headerTintColor: '#FFF',
+          headerStyle: {
+            backgroundColor: '#32899F',
+          },
+          headerBackTitleStyle: {alignSelf: 'flex-start'},
+          title: (
+            <Text style={{fontFamily: 'Tajawal-Regular', color: '#FFF'}}>
+              {' '}
+              {'المشتريات'}{' '}
             </Text>
           ),
         }}
