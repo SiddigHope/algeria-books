@@ -1,5 +1,9 @@
 import React, {Component} from 'react';
-import {Text, StyleSheet, View, FlatList} from 'react-native';
+import {Text, StyleSheet, View, FlatList, TouchableOpacity} from 'react-native';
+import { getPermission, mainDomain, openPdf } from '../config/var';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import RNFetchBlob from 'rn-fetch-blob';
+import {now} from 'moment';
 
 export default class FreeSalesComponent extends Component {
   constructor(props) {
@@ -24,6 +28,128 @@ export default class FreeSalesComponent extends Component {
       />
     );
   }
+
+  checkFile = item => {
+    const file= '/storage/emulated/0/receipts/order-' + item.order_id + '-free-books.pdf'
+    getPermission();
+    RNFetchBlob.fs
+      .exists(file)
+      .then(exist => {
+        console.log(`file ${exist ? '' : 'not'} exists`);
+        exist?openPdf(file):this.getOrderDetails(item)
+      })
+      .catch(error => {
+        console.log(error);
+      });
+  };
+
+  getOrderDetails = item => {
+    getPermission();
+
+    this.props.download(true, 0);
+    // console.log('sdjnchjbds');
+    // function loop through all the students and return the student who belongs to this particular order
+    const filtering = student => student.MatriculeElv == item.eleve;
+
+    // getting the who ordered the books
+    const student = this.props.students.filter(filtering);
+
+    // converting the book lists object to and array of ids
+    const book_list = JSON.parse(item.book_list);
+    // function loop through all the book lists and return the book id only in the from of arrays
+    const mapping = book => book.book_id;
+    const bookIds = book_list.map(mapping);
+
+    const {dirs} = RNFetchBlob.fs;
+    // console.log(dirs.DownloadDir)
+    const downloadFileName = 'order-' + item.order_id + '-free-books.pdf';
+
+    // console.log(student)
+    // return
+    try {
+      RNFetchBlob.fetch(
+        'POST',
+        mainDomain + 'getPdfInfo.php',
+        {
+          'Cache-Control': 'no-store',
+        },
+        [
+          // to send data
+          {name: 'parentId', data: String(this.props.parent.MatriculeParent)},
+          {
+            name: 'parentName',
+            data: String(
+              this.props.parent.NomArParent +
+                ' ' +
+                this.props.parent.PrenomArParent,
+            ),
+          },
+          {
+            name: 'parentPhone',
+            data: String(this.props.parent.TelMobileTutr),
+          },
+          {name: 'order_id', data: String(item.order_id)},
+          {
+            name: 'studentName',
+            data: String(student[0].NomArElv + ' ' + student[0].PrenomArElv),
+          },
+          {name: 'studentId', data: String(student[0].MatriculeElv)},
+          {name: 'division', data: String(student[0].division)},
+          {name: 'institution', data: String(student[0].institution)},
+          {name: 'books', data: String(bookIds)},
+          {name: 'pdfType', data: String('FREE')},
+        ],
+      )
+        .then(async resp => {
+          // console.log(resp.data)
+
+          let base64Str = resp.data;
+
+          let fLocation = '/storage/emulated/0/receipts/' + downloadFileName;
+          try {
+            await RNFetchBlob.fs
+              .writeFile(fLocation, base64Str, 'base64')
+              .then(() => {
+                this.props.download(true, 1);
+                setTimeout(() => {
+                  this.props.download(false, 0);
+                }, 3000);
+                // RNFetchBlob.android.actionViewIntent(fLocation, 'application/pdf');
+              })
+              .catch(error => {
+                this.props.download(true, 2);
+                setTimeout(() => {
+                  this.props.download(false, 0);
+                }, 2000);
+                console.log(error);
+              });
+          } catch (error) {
+            this.props.download(true, 2);
+            setTimeout(() => {
+              this.props.download(false, 0);
+            }, 2000);
+            console.log(error);
+          }
+        })
+        .catch(err => {
+          this.props.download(true, 2);
+          setTimeout(() => {
+            this.props.download(false, 0);
+          }, 2000);
+          this.setState({
+            setModalVisible: false,
+          });
+          console.log('error response');
+          console.log(err);
+        });
+    } catch (error) {
+      this.props.download(true, 2);
+      setTimeout(() => {
+        this.props.download(false, 0);
+      }, 2000);
+      console.log(error);
+    }
+  };
 
   render() {
     return (
@@ -81,7 +207,10 @@ export default class FreeSalesComponent extends Component {
                       <Text style={styles.content}> {item.item.price} </Text>
                     </View>
                     <View style={styles.rowData}>
-                      <Text style={styles.content}> {item.item.order_id} </Text>
+                      <TouchableOpacity
+                        onPress={() => this.checkFile(item.item)}>
+                        <Icon name="file-pdf" size={25} color="#e80242" />
+                      </TouchableOpacity>
                     </View>
                   </View>
                 </View>

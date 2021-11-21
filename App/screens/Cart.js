@@ -34,7 +34,7 @@ export default class MyStudents extends Component {
       studentsClone: [],
       search: false,
       id: '',
-      total: 0,
+      total: "0.001",
       disabled: false,
     };
   }
@@ -130,8 +130,8 @@ export default class MyStudents extends Component {
         );
         if (studentCart != null) {
           const jsonCart = JSON.parse(studentCart);
-          console.log('sCartdqwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww');
-          console.log(jsonCart);
+          // console.log('sCartdqwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww');
+          // console.log(jsonCart);
           let total = 0;
           const books = [];
           jsonCart.forEach(element => {
@@ -143,7 +143,7 @@ export default class MyStudents extends Component {
           student.books = books;
           student.total = total;
           whole += total;
-          if(total != 0){
+          if (total != 0) {
             students.push(student);
           }
           if (student.LivreGratuitElv == '1') {
@@ -168,13 +168,23 @@ export default class MyStudents extends Component {
     const string = 'اجمالي للمشتريات:';
     const totalPay = 'تأكيد عملية الشراء';
     let total = String(this.state.total).split('.');
-    let decimal = total.length > 1 ? total[1].slice(0,2):"00"
-    console.log(total)
+    let decimal = total.length > 1 ? total[1].slice(0, 2) : '00';
+
+    // console.log(this.state.total)
+    
+    if (this.state.total == 0) {
+      return (
+          <Text style={[styles.payAsWhole, {alignSelf: 'center', color:"#e57373"}]}>
+            {'لا توجد مشتريات على السلة ...'}
+          </Text>
+      );
+    }
+
     if (this.state.disabled) {
       return (
         <View style={styles.footer}>
           <Text style={styles.payAsWhole}>
-            {string + total[0] +"."+decimal + ' دجـ'}
+            {string + total[0] + '.' + decimal + ' دجـ'}
           </Text>
         </View>
       );
@@ -182,7 +192,7 @@ export default class MyStudents extends Component {
     return (
       <View style={styles.footer}>
         <Text style={styles.payAsWhole}>
-          {string + total[0] +"."+decimal + ' دجـ'}
+          {string + total[0] + '.' + decimal + ' دجـ'}
         </Text>
         <Pressable
           onPress={() =>
@@ -245,6 +255,9 @@ export default class MyStudents extends Component {
                 backgroundColor = '#FFF';
                 elevation = 0;
               }
+              let total = String(item.item.total).split('.');
+              let decimal = total.length > 1 ? total[1].slice(0, 2) : '00';
+              let price = total[0] + '.' + decimal;
               return (
                 <>
                   <View style={[styles.newContainer, {backgroundColor}]}>
@@ -254,7 +267,7 @@ export default class MyStudents extends Component {
                           this.props.navigation.navigate('Payment', {
                             item: item.item,
                             type: '1',
-                            total: item.item.total,
+                            total: price,
                             students: item.item,
                           })
                         }
@@ -266,10 +279,7 @@ export default class MyStudents extends Component {
                         />
                       </TouchableOpacity>
                       <Pressable style={styles.rowData}>
-                        <Text style={styles.content}>
-                          {' '}
-                          {item.item.total + ' دجـ'}{' '}
-                        </Text>
+                        <Text style={styles.content}> {price + ' دجـ'} </Text>
                       </Pressable>
                       <Pressable style={styles.rowData}>
                         <Text style={styles.content}>

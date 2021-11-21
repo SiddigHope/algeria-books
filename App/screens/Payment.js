@@ -343,6 +343,11 @@ export default class Payment extends Component {
   };
 
   render() {
+    console.log(
+      this.state.user.length != 0
+        ? this.state.user.NomArParent + this.state.user.PrenomArParent
+        : '',
+    );
     return (
       <View style={styles.container}>
         <StatusBar backgroundColor="#32899F" />
@@ -426,21 +431,21 @@ export default class Payment extends Component {
             />
             <Text style={styles.rowDataValue}>{'طريقة الدفع'}</Text>
             {this.state.disabled ? (
-                <RadioButtonRN
-                  style={{
-                    flexDirection: 'row',
-                    width: '70%',
-                    alignSelf: 'center',
-                  }}
-                  boxStyle={[styles.boxStyle]}
-                  textStyle={{
-                    marginHorizontal: 3,
-                    fontFamily: 'Tajawal-Regular',
-                  }}
-                  initial={1}
-                  data={free}
-                  icon={<Icon name="check-circle" size={25} color="#32899F" />}
-                />
+              <RadioButtonRN
+                style={{
+                  flexDirection: 'row',
+                  width: '70%',
+                  alignSelf: 'center',
+                }}
+                boxStyle={[styles.boxStyle]}
+                textStyle={{
+                  marginHorizontal: 3,
+                  fontFamily: 'Tajawal-Regular',
+                }}
+                initial={1}
+                data={free}
+                icon={<Icon name="check-circle" size={25} color="#32899F" />}
+              />
             ) : (
               <RadioButtonRN
                 selectedBtn={payment => {
@@ -466,7 +471,13 @@ export default class Payment extends Component {
         <Pressable
           onPress={() =>
             this.state.studentsList.length == 1
-              ? this.onPressPay(this.state.disabled?"2":this.state.payment == '1' ? '1' : '0')
+              ? this.onPressPay(
+                  this.state.disabled
+                    ? '2'
+                    : this.state.payment == '1'
+                    ? '1'
+                    : '0',
+                )
               : this.completePayment(this.state.payment == '1' ? '1' : '0')
           }
           style={styles.btn}>

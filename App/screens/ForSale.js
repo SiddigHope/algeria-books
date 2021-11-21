@@ -6,6 +6,7 @@ import {
   Text,
   FlatList,
   Dimensions,
+  ActivityIndicator,
   ImageBackground,
   TouchableWithoutFeedback,
   TouchableOpacity,
@@ -30,6 +31,7 @@ class ForSale extends Component {
       dataClone: [],
       sold: [],
       cartItemsCount: 0,
+      activityIndicator: true,
       selectedItems: [],
     };
   }
@@ -52,13 +54,16 @@ class ForSale extends Component {
         user: true,
         id: userJson.MatriculeParent,
         password: userJson.password,
-        ActivityIndicator: false,
+        // activityIndicator: false,
       });
       this.getSoldBooks();
     }
   };
 
   getSoldBooks = async () => {
+    this.setState({
+      activityIndicator: true,
+    });
     const student = this.props.route.params.student;
     // console.log(student);
     RNFetchBlob.fetch(
@@ -84,36 +89,37 @@ class ForSale extends Component {
         const jwt = jwt_decode(token);
         const full = JSON.parse(jwt.data.data);
         // const full = data
-        console.log('this.state.id');
+        // console.log('this.state.id');
         // console.log(full);
         if (full.message || full.length == 0) {
           this.setState({
             selectedItems: [],
+            // setModalVisible: false,
           });
+          this.getBooks();
           return;
         } else {
           full.forEach(book => {
             const book_ids = JSON.parse(book.book_list);
             book['book_list'] = book_ids;
             book_ids.forEach(element => {
-              const index = selectedItems.indexOf(element.book_id)
-              if(!(index > -1)){
+              const index = selectedItems.indexOf(element.book_id);
+              if (!(index > -1)) {
                 selectedItems.push(element.book_id);
+                // setModalVisible: false,
               }
-              console.log(selectedItems)
+              console.log(selectedItems);
             });
           });
         }
         this.setState({
           selectedItems: selectedItems,
+          // setModalVisible: false,
         });
-        this.getBooks()
+        this.getBooks();
       })
       .catch(err => {
-        this.setState({
-          setModalVisible: false,
-        });
-        this.getBooks()
+        this.getBooks();
         console.log('error response');
         console.log(err);
       });
@@ -145,16 +151,19 @@ class ForSale extends Component {
         const jwt = jwt_decode(token);
         const full = JSON.parse(jwt.data.data);
         // const full = data
-        // console.log('this.state.id');
-        // console.log(full);
+        console.log('this.state.id');
+        console.log(full);
         this.setState({
           data: full.message ? [] : full,
           dataClone: full,
+          // setModalVisible: false,
+          activityIndicator: false,
+          // dataLoaded : true
         });
       })
       .catch(err => {
         this.setState({
-          setModalVisible: false,
+          activityIndicator: false,
         });
         console.log('error response');
         console.log(err);
@@ -253,6 +262,13 @@ class ForSale extends Component {
   };
 
   render() {
+    if(this.state.activityIndicator){
+      return(
+        <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
+          <ActivityIndicator size='large' color="rgba(50,137,159,1)" />
+        </View>
+      )
+    }
     return (
       <View style={styles.container}>
         {/* cart item */}

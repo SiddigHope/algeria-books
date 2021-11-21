@@ -33,7 +33,7 @@ export default class Login extends PureComponent {
     connected: true,
     imei: '',
     id: '',
-    // id: 'abdes25021@gmail.com',
+    // id: 'abdes2502@gmail.com',
     setModalVisible: false,
     user: false,
     prev: '',
@@ -241,6 +241,9 @@ export default class Login extends PureComponent {
   };
 
   confirmSignin = async () => {
+    this.setState({
+      ActivityIndicator: true
+    })
     if (this.state.userData != '') {
       const id = await DeviceInfo.getUniqueId();
       console.log(id);
@@ -414,7 +417,14 @@ export default class Login extends PureComponent {
                       justifyContent: 'center',
                     },
                   ]}>
-                  <Text
+                  {this.state.ActivityIndicator?(
+                    <ActivityIndicator
+                      animating={this.state.ActivityIndicator}
+                      color="#e3e3e3"
+                      size="small"
+                    />
+                  ):(
+                    <Text
                     style={[
                       styles.textTitle,
                       {
@@ -426,6 +436,7 @@ export default class Login extends PureComponent {
                     {' '}
                     {'تسجيل الدخول'}{' '}
                   </Text>
+                  )}
                 </TouchableOpacity>
               </View>
             </View>
