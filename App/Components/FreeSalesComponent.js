@@ -4,6 +4,7 @@ import { getPermission, mainDomain, openPdf } from '../config/var';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import RNFetchBlob from 'rn-fetch-blob';
 import {now} from 'moment';
+import FreeComponent from './FreeComponent';
 
 export default class FreeSalesComponent extends Component {
   constructor(props) {
@@ -18,6 +19,7 @@ export default class FreeSalesComponent extends Component {
       studentsClone: [],
       search: false,
       id: '',
+      check:false
     };
   }
 
@@ -113,6 +115,9 @@ export default class FreeSalesComponent extends Component {
                 this.props.download(true, 1);
                 setTimeout(() => {
                   this.props.download(false, 0);
+                  this.setState({
+                    check:true
+                  })
                 }, 3000);
                 // RNFetchBlob.android.actionViewIntent(fLocation, 'application/pdf');
               })
@@ -178,45 +183,9 @@ export default class FreeSalesComponent extends Component {
           data={this.props.data}
           keyExtractor={(item, index) => index.toString()}
           // ItemSeparatorComponent={() => this.separator()}
-          renderItem={(item, index) => {
-            // console.log(item.index)
-            let backgroundColor = '#FFF';
-            let elevation = 3;
-            if (item.index % 2 == 1) {
-              backgroundColor = '#FFF';
-              elevation = 0;
-            }
-            return (
-              <>
-                <View style={[styles.newContainer, {backgroundColor}]}>
-                  <View style={[styles.rowContainer]}>
-                    {/* <View style={styles.rowData}>
-                      {item.item.receipe != '0' ? (
-                        <Icon name="check-bold" color="#81c784" size={25} />
-                      ) : (
-                        <Icon name="close-thick" color="#ef5350" size={25} />
-                      )}
-                    </View> */}
-                    <View style={styles.rowData}>
-                      <Text style={styles.content}>
-                        {' '}
-                        {item.item.date.slice(0, 10)}{' '}
-                      </Text>
-                    </View>
-                    <View style={styles.rowData}>
-                      <Text style={styles.content}> {item.item.price} </Text>
-                    </View>
-                    <View style={styles.rowData}>
-                      <TouchableOpacity
-                        onPress={() => this.checkFile(item.item)}>
-                        <Icon name="file-pdf" size={25} color="#e80242" />
-                      </TouchableOpacity>
-                    </View>
-                  </View>
-                </View>
-              </>
-            );
-          }}
+          renderItem={(item, index) => (
+            <FreeComponent item={item} index={index} checkFile={this.checkFile} check={this.state.check} />
+          )}
         />
       </View>
     );

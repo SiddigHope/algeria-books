@@ -24,7 +24,7 @@ export default class OnlineComponent extends Component {
     this.setState({
         exists
     })
-    console.log(exists)
+    // console.log(exists)
   };
 
   render() {
@@ -33,6 +33,9 @@ export default class OnlineComponent extends Component {
     if (this.props.item.index % 2 == 1) {
       backgroundColor = '#FFF';
       elevation = 0;
+    }
+    if(this.props.check){
+        this.checkFile()
     }
     return (
       <>

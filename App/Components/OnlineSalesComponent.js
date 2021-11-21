@@ -19,6 +19,7 @@ export default class OnlineSalesComponent extends Component {
       studentsClone: [],
       search: false,
       id: '',
+      check: false
     };
   }
 
@@ -115,6 +116,9 @@ export default class OnlineSalesComponent extends Component {
                 this.props.download(true, 1);
                 setTimeout(() => {
                   this.props.download(false, 0);
+                  this.setState({
+                    check: true
+                  })
                 }, 3000);
                 // RNFetchBlob.android.actionViewIntent(fLocation, 'application/pdf');
               })
@@ -181,7 +185,7 @@ export default class OnlineSalesComponent extends Component {
           keyExtractor={(item, index) => index.toString()}
           // ItemSeparatorComponent={() => this.separator()}
           renderItem={(item, index) => (
-           <OnlineComponent item={item} index={index} checkFile={this.checkFile} />
+           <OnlineComponent item={item} index={index} checkFile={this.checkFile} check={this.state.check} />
           )}
         />
       </View>
