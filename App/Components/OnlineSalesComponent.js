@@ -1,7 +1,13 @@
 import React, {Component} from 'react';
-import {Text, StyleSheet, View, FlatList, TouchableOpacity} from 'react-native';
+import {
+  Text,
+  StyleSheet,
+  View,
+  FlatList,
+  ActivityIndicator,
+} from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import { checkFile, getPermission, mainDomain, openPdf } from '../config/var';
+import {checkFile, getPermission, mainDomain, openPdf} from '../config/var';
 import RNFetchBlob from 'rn-fetch-blob';
 import {now} from 'moment';
 import OnlineComponent from './OnlineComponent';
@@ -19,7 +25,7 @@ export default class OnlineSalesComponent extends Component {
       studentsClone: [],
       search: false,
       id: '',
-      check: false
+      check: false,
     };
   }
 
@@ -32,13 +38,16 @@ export default class OnlineSalesComponent extends Component {
   }
 
   checkFile = item => {
-    const file= '/storage/emulated/0/receipts/order-' + item.order_id + '-golden-card.pdf'
+    const file =
+      '/storage/emulated/0/receipts/order-' +
+      item.order_id +
+      '-golden-card.pdf';
     getPermission();
     RNFetchBlob.fs
       .exists(file)
       .then(exist => {
-        console.log(`file ${exist ? '' : 'not'} exists`);
-        exist?openPdf(file):this.getOrderDetails(item)
+        // console.log(`file ${exist ? '' : 'not'} exists`);
+        exist ? openPdf(file) : this.getOrderDetails(item);
       })
       .catch(error => {
         console.log(error);
@@ -68,8 +77,7 @@ export default class OnlineSalesComponent extends Component {
     // console.log(student)
     // return
     try {
-      RNFetchBlob
-      .fetch(
+      RNFetchBlob.fetch(
         'POST',
         mainDomain + 'getPdfInfo.php',
         {
@@ -88,13 +96,14 @@ export default class OnlineSalesComponent extends Component {
           },
           {
             name: 'parentPhone',
-            data: String(this.props.parent.TelMobileTutr),
+            data: String('0' + this.props.parent.TelMobileTutr),
           },
           {name: 'order_id', data: String(item.order_id)},
           {
             name: 'studentName',
             data: String(student[0].NomArElv + ' ' + student[0].PrenomArElv),
           },
+          {name: 'divisionId', data: String(student[0].FkCdDivisionActl)},
           {name: 'studentId', data: String(student[0].MatriculeElv)},
           {name: 'division', data: String(student[0].division)},
           {name: 'institution', data: String(student[0].institution)},
@@ -103,9 +112,8 @@ export default class OnlineSalesComponent extends Component {
         ],
       )
         .then(async resp => {
-
           // console.log(resp.data)
-          
+
           let base64Str = resp.data;
 
           let fLocation = '/storage/emulated/0/receipts/' + downloadFileName;
@@ -117,8 +125,8 @@ export default class OnlineSalesComponent extends Component {
                 setTimeout(() => {
                   this.props.download(false, 0);
                   this.setState({
-                    check: true
-                  })
+                    check: true,
+                  });
                 }, 3000);
                 // RNFetchBlob.android.actionViewIntent(fLocation, 'application/pdf');
               })
@@ -180,14 +188,26 @@ export default class OnlineSalesComponent extends Component {
             </View>
           </View>
         </View>
-        <FlatList
-          data={this.props.data}
-          keyExtractor={(item, index) => index.toString()}
-          // ItemSeparatorComponent={() => this.separator()}
-          renderItem={(item, index) => (
-           <OnlineComponent item={item} index={index} checkFile={this.checkFile} check={this.state.check} />
-          )}
-        />
+        {this.props.loading ? (
+          <View
+            style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
+            <ActivityIndicator color="rgba(50,137,159,1)" size="large" />
+          </View>
+        ) : (
+          <FlatList
+            data={this.props.data}
+            keyExtractor={(item, index) => index.toString()}
+            // ItemSeparatorComponent={() => this.separator()}
+            renderItem={(item, index) => (
+              <OnlineComponent
+                item={item}
+                index={index}
+                checkFile={this.checkFile}
+                check={this.state.check}
+              />
+            )}
+          />
+        )}
       </View>
     );
   }

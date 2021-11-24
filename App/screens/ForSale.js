@@ -39,9 +39,6 @@ class ForSale extends Component {
   componentDidMount() {
     this.getCartItems();
     this.checkUser();
-    // const student = this.props.route.params.student
-    // AsyncStorage.removeItem('cart')
-    // AsyncStorage.removeItem(student.MatriculeElv+'cart')
   }
 
   checkUser = async () => {
@@ -108,7 +105,7 @@ class ForSale extends Component {
                 selectedItems.push(element.book_id);
                 // setModalVisible: false,
               }
-              console.log(selectedItems);
+              // console.log(selectedItems);
             });
           });
         }
@@ -127,7 +124,7 @@ class ForSale extends Component {
 
   getBooks = async () => {
     const student = this.props.route.params.student;
-    // console.log(student);
+    console.log(student);
     RNFetchBlob.fetch(
       'POST',
       mainDomain + 'getStudentBooks.php',
@@ -151,8 +148,8 @@ class ForSale extends Component {
         const jwt = jwt_decode(token);
         const full = JSON.parse(jwt.data.data);
         // const full = data
-        console.log('this.state.id');
-        console.log(full);
+        // console.log('this.state.id');
+        // console.log(full);
         this.setState({
           data: full.message ? [] : full,
           dataClone: full,
@@ -210,7 +207,7 @@ class ForSale extends Component {
     );
     if (cart != null) {
       const jsonCart = JSON.parse(cart);
-      console.log('sdfsdfdsfs');
+      // console.log('sdfsdfdsfs');
       jsonCart.push(item);
       // console.log(jsonCart);
       // this.setState({
@@ -229,7 +226,7 @@ class ForSale extends Component {
 
     const sTotal = await AsyncStorage.getItem('cart');
     if (sTotal != null) {
-      console.log('1111111111');
+      // console.log('1111111111');
       const total = JSON.parse(sTotal);
       total.push(item);
       // console.log(item);
@@ -274,7 +271,7 @@ class ForSale extends Component {
         {/* cart item */}
         <TouchableOpacity
           onPress={() => {
-            console.log('cart');
+            // console.log('cart');
             this.props.navigation.navigate('Cart');
           }}
           style={styles.cartCont}>
@@ -289,6 +286,7 @@ class ForSale extends Component {
           keyExtractor={(item, index) => index.toString()}
           showsVerticalScrollIndicator={false}
           ListHeaderComponent={() => <View style={{height: 20}} />}
+          ListFooterComponent={() => <View style={{height: 80}} />}
           numColumns={3}
           renderItem={({item, index}) => {
             // console.log(item)
@@ -350,7 +348,7 @@ class ForSale extends Component {
                               backgroundColor: '#FFF',
                             }}
                             onPress={() => {
-                              console.log('adding item to the cart');
+                              // console.log('adding item to the cart');
                               this.addToCart(item);
                             }}>
                             <Icon

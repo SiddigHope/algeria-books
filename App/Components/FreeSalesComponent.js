@@ -1,6 +1,6 @@
 import React, {Component} from 'react';
-import {Text, StyleSheet, View, FlatList, TouchableOpacity} from 'react-native';
-import { getPermission, mainDomain, openPdf } from '../config/var';
+import {Text, StyleSheet, View, FlatList, ActivityIndicator} from 'react-native';
+import {getPermission, mainDomain, openPdf} from '../config/var';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import RNFetchBlob from 'rn-fetch-blob';
 import {now} from 'moment';
@@ -19,7 +19,7 @@ export default class FreeSalesComponent extends Component {
       studentsClone: [],
       search: false,
       id: '',
-      check:false
+      check: false,
     };
   }
 
@@ -32,13 +32,14 @@ export default class FreeSalesComponent extends Component {
   }
 
   checkFile = item => {
-    const file= '/storage/emulated/0/receipts/order-' + item.order_id + '-free-books.pdf'
+    const file =
+      '/storage/emulated/0/receipts/order-' + item.order_id + '-free-books.pdf';
     getPermission();
     RNFetchBlob.fs
       .exists(file)
       .then(exist => {
-        console.log(`file ${exist ? '' : 'not'} exists`);
-        exist?openPdf(file):this.getOrderDetails(item)
+        // console.log(`file ${exist ? '' : 'not'} exists`);
+        exist ? openPdf(file) : this.getOrderDetails(item);
       })
       .catch(error => {
         console.log(error);
@@ -88,13 +89,14 @@ export default class FreeSalesComponent extends Component {
           },
           {
             name: 'parentPhone',
-            data: String(this.props.parent.TelMobileTutr),
+            data: String('0' + this.props.parent.TelMobileTutr),
           },
           {name: 'order_id', data: String(item.order_id)},
           {
             name: 'studentName',
             data: String(student[0].NomArElv + ' ' + student[0].PrenomArElv),
           },
+          {name: 'divisionId', data: String(student[0].FkCdDivisionActl)},
           {name: 'studentId', data: String(student[0].MatriculeElv)},
           {name: 'division', data: String(student[0].division)},
           {name: 'institution', data: String(student[0].institution)},
@@ -116,8 +118,8 @@ export default class FreeSalesComponent extends Component {
                 setTimeout(() => {
                   this.props.download(false, 0);
                   this.setState({
-                    check:true
-                  })
+                    check: true,
+                  });
                 }, 3000);
                 // RNFetchBlob.android.actionViewIntent(fLocation, 'application/pdf');
               })
@@ -165,9 +167,9 @@ export default class FreeSalesComponent extends Component {
             {backgroundColor: '#e3e3e3', height: 50},
           ]}>
           <View style={[styles.rowTopContainer]}>
-            {/* <View style={styles.rowTopData}>
+            <View style={styles.rowTopData}>
               <Text style={styles.textTitle}> {'حالة الطلب'} </Text>
-            </View> */}
+            </View>
             <View style={styles.rowTopData}>
               <Text style={styles.textTitle}> {'التاريخ'} </Text>
             </View>
@@ -179,14 +181,26 @@ export default class FreeSalesComponent extends Component {
             </View>
           </View>
         </View>
-        <FlatList
-          data={this.props.data}
-          keyExtractor={(item, index) => index.toString()}
-          // ItemSeparatorComponent={() => this.separator()}
-          renderItem={(item, index) => (
-            <FreeComponent item={item} index={index} checkFile={this.checkFile} check={this.state.check} />
-          )}
-        />
+        {this.props.loading ? (
+          <View
+            style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
+            <ActivityIndicator color="rgba(50,137,159,1)" size="large" />
+          </View>
+        ) : (
+          <FlatList
+            data={this.props.data}
+            keyExtractor={(item, index) => index.toString()}
+            // ItemSeparatorComponent={() => this.separator()}
+            renderItem={(item, index) => (
+              <FreeComponent
+                item={item}
+                index={index}
+                checkFile={this.checkFile}
+                check={this.state.check}
+              />
+            )}
+          />
+        )}
       </View>
     );
   }

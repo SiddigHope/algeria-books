@@ -58,6 +58,8 @@ export default class Payment extends Component {
       asyncKey: [],
       studentsList: [],
       disabled: false,
+      email: '',
+      name: '',
     };
   }
 
@@ -66,6 +68,23 @@ export default class Payment extends Component {
     this.setItemsAsArrayOfIds();
     // console.log(defBranch)
   }
+
+  getUser = async () => {
+    const user = await AsyncStorage.getItem('parentInfo');
+    const userId = await AsyncStorage.getItem('parentId');
+    if (user != null) {
+      const userJson = JSON.parse(user);
+      //   console.log(userJson);
+      this.setState({
+        user: userJson,
+        id: userId,
+        email: userId,
+        name: userJson.NomArParent + ' ' + userJson.PrenomArParent,
+      });
+      // console.log(userJson);
+      // console.log(userId);
+    }
+  };
 
   setItemsAsArrayOfIds = async () => {
     let bookCounts = 0;
@@ -149,7 +168,7 @@ export default class Payment extends Component {
       fetch(mainDomain + 'bookOrder.php', requestOptions)
         .then(response => response.json())
         .then(data => {
-          console.log(data);
+          // console.log(data);
           const token = data.data; //"Don't touch this shit"
           const jwt = jwt_decode(token);
           const full = JSON.parse(jwt.data.data);
@@ -198,7 +217,7 @@ export default class Payment extends Component {
 
     const students = this.props.route.params.students;
     students.forEach((iterated, index) => {
-      console.log(iterated);
+      // console.log(iterated);
       ////////////////////////////////////////////////////////////////
 
       const formData = new FormData();
@@ -220,7 +239,7 @@ export default class Payment extends Component {
         fetch(mainDomain + 'bookOrder.php', requestOptions)
           .then(response => response.json())
           .then(data => {
-            console.log(data);
+            // console.log(data);
             const token = data.data; //"Don't touch this shit"
             const jwt = jwt_decode(token);
             const full = JSON.parse(jwt.data.data);
@@ -282,8 +301,8 @@ export default class Payment extends Component {
       fetch(mainDomain + 'insertIntoOrder.php', requestOptions)
         .then(response => response.json())
         .then(data => {
-          console.log('data');
-          console.log(data);
+          // console.log('data');
+          // console.log(data);
           const token = data.data; //"Don't touch this shit"
           const jwt = jwt_decode(token);
           const full = JSON.parse(jwt.data.data);
@@ -327,27 +346,8 @@ export default class Payment extends Component {
     });
   };
 
-  getUser = async () => {
-    const user = await AsyncStorage.getItem('parentInfo');
-    const userId = await AsyncStorage.getItem('parentId');
-    if (user != null) {
-      const userJson = JSON.parse(user);
-      //   console.log(userJson);
-      this.setState({
-        user: userJson,
-        id: userId,
-      });
-      // console.log(userJson);
-      // console.log(userId);
-    }
-  };
-
   render() {
-    console.log(
-      this.state.user.length != 0
-        ? this.state.user.NomArParent + this.state.user.PrenomArParent
-        : '',
-    );
+    // console.log(this.state.email);
     return (
       <View style={styles.container}>
         <StatusBar backgroundColor="#32899F" />
@@ -389,13 +389,6 @@ export default class Payment extends Component {
               <Text style={[styles.rowDataValue]}>{'المجموع الكلي'}</Text>
             </View>
 
-            {/* <View style={styles.rowData}>
-              <Text style={[styles.rowDataKey, {fontSize: 18}]}>
-                {''}
-              </Text>
-              <Text style={[styles.rowDataValue]}>{''}</Text>
-            </View> */}
-
             <View style={styles.rowData}>
               <Text style={[styles.rowDataKey]}>
                 {this.props.route.params.type != '0' ? 'دفع فردي' : 'دفع جماعي'}
@@ -408,26 +401,16 @@ export default class Payment extends Component {
               keyboardType="default"
               style={styles.textInput}
               editable={false}
-              blurOnSubmit={false}
-              value={
-                this.state.user.length != 0
-                  ? this.state.user.NomArParent + this.state.user.PrenomArParent
-                  : ''
-              }
+              value={this.state.name}
               placeholder={'الاسم كاملا'}
-              onSubmitEditing={() => this.password.focus()}
-              onChangeText={fullname => this.setState({fullname})}
             />
             <TextInput
               textAlign={'32323' == 'Hommies' ? 'left' : 'right'}
               keyboardType="phone-pad"
               editable={false}
               style={styles.textInput}
-              blurOnSubmit={false}
-              value={this.state.user.length != 0 ? this.state.id : ''}
+              value={this.state.email}
               placeholder={'الايميل'}
-              onSubmitEditing={() => this.password.focus()}
-              onChangeText={phone => this.setState({phone})}
             />
             <Text style={styles.rowDataValue}>{'طريقة الدفع'}</Text>
             {this.state.disabled ? (
@@ -450,12 +433,12 @@ export default class Payment extends Component {
               <RadioButtonRN
                 selectedBtn={payment => {
                   if (this.state.disabled) {
-                    console.log(payment.value);
+                    // console.log(payment.value);
                   } else {
                     this.setState({
                       payment: payment.value,
                     });
-                    console.log(payment.value);
+                    // console.log(payment.value);
                   }
                 }}
                 style={[{flexDirection: 'row'}]}
@@ -576,6 +559,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFF',
     borderRadius: 10,
     fontSize: 14,
+    color:'grey',
     elevation: 1,
     fontFamily: 'Tajawal-Regular',
     marginBottom: 5,

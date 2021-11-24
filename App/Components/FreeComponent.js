@@ -39,13 +39,20 @@ export default class FreeComponent extends Component {
       backgroundColor = '#FFF';
       elevation = 0;
     }
-    if(this.props.check){
-        this.checkFile()
+    if (this.props.check) {
+      this.checkFile();
     }
     return (
       <>
         <View style={[styles.newContainer, {backgroundColor}]}>
           <View style={[styles.rowContainer]}>
+            <View style={styles.rowData}>
+              {this.props.item.item.receipe != '0' ? (
+                <Icon name="check-bold" color="#81c784" size={25} />
+              ) : (
+                <Icon name="close-thick" color="#ef5350" size={25} />
+              )}
+            </View>
             <View style={styles.rowData}>
               <Text style={styles.content}>
                 {' '}

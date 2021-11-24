@@ -21,6 +21,7 @@ import {TouchableOpacity} from 'react-native-gesture-handler';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
 const {width, height} = Dimensions.get('window');
+
 export default class Sales extends Component {
   constructor(props) {
     super(props);
@@ -37,11 +38,13 @@ export default class Sales extends Component {
       userInfo: [],
       students: [],
       downloadModal: false,
-      downloadStatus: 3
+      downloadStatus: 0,
+      first: false,
+      loading: false,
     };
 
-    this.download = this.download.bind(this)
-    this.setState = this.setState.bind(this)
+    this.download = this.download.bind(this);
+    this.setState = this.setState.bind(this);
   }
 
   componentDidMount() {
@@ -68,54 +71,72 @@ export default class Sales extends Component {
 
   getOrders = async () => {
     // const userDist = await AsyncStorage.getItem('teacherDist');
-    RNFetchBlob.fetch(
-      'POST',
-      mainDomain + 'getOrders.php',
-      {
-        // Authorization: "Bearer access-token",
-        // otherHeader: "foo",
-        // 'Content-Type': 'multipart/form-data',
-        'Content-Type': 'application/json',
-      },
-      [
-        // to send data
-        {name: 'parentId', data: String(this.state.id)},
-        // { name: 'div', data: String('1100001') },
-        // {name: 'dist', data: String('12')},
-      ],
-    )
-      .then(resp => {
-        // console.log(resp.data);
-        const data = JSON.parse(resp.data);
-        const token = data.data; //"Don't touch this shit"
-        const jwt = jwt_decode(token);
-        const full = JSON.parse(jwt.data.data);
-        // const full = data
-
-        if (full.message) {
-          return;
-        }
-        this.setState({
-          onlineOrders: full.filter(order => order.online_paid == '1'),
-          cashOrders: full.filter(order => order.online_paid == '0'),
-          freeOrders: full.filter(order => order.online_paid == '2'),
+    this.setState({
+      loading: true,
+    });
+    try {
+      RNFetchBlob.fetch(
+        'POST',
+        mainDomain + 'getOrders.php',
+        {
+          // Authorization: "Bearer access-token",
+          // otherHeader: "foo",
+          // 'Content-Type': 'multipart/form-data',
+          'Content-Type': 'application/json',
+        },
+        [
+          // to send data
+          {name: 'parentId', data: String(this.state.id)},
+          // { name: 'div', data: String('1100001') },
+          // {name: 'dist', data: String('12')},
+        ],
+      )
+        .then(resp => {
+          // console.log(resp.data);
+          const data = JSON.parse(resp.data);
+          const token = data.data; //"Don't touch this shit"
+          const jwt = jwt_decode(token);
+          const full = JSON.parse(jwt.data.data);
+          // const full = data
+  
+          if (full.message) {
+            return;
+          }
+          this.setState({
+            onlineOrders: full.filter(order => order.online_paid == '1'),
+            cashOrders: full.filter(order => order.online_paid == '0'),
+            freeOrders: full.filter(order => order.online_paid == '2'),
+            loading: false,
+          });
+        })
+        .catch(err => {
+          this.setState({
+            setModalVisible: false,
+          });
+          console.log('error response');
+          console.log(err);
+          this.setState({
+            loading: false,
+          });
         });
-      })
-      .catch(err => {
-        this.setState({
-          setModalVisible: false,
-        });
-        console.log('error response');
-        console.log(err);
+    } catch (error) {
+      this.setState({
+        setModalVisible: false,
       });
+      console.log('error response');
+      console.log(error);
+      this.setState({
+        loading: false,
+      });
+    }
   };
 
   download = (modal, status) => {
     this.setState({
       downloadModal: modal,
-      downloadStatus: status
-    })
-  }
+      downloadStatus: status,
+    });
+  };
 
   renderTabBar = props => {
     props.tabStyle = Object.create(props.tabStyle);
@@ -123,7 +144,12 @@ export default class Sales extends Component {
   };
 
   render() {
-    let color = this.state.downloadStatus == 0?"#64b5f6":this.state.downloadStatus == 1?"#81c784":"#ef5350"
+    let color =
+      this.state.downloadStatus == 0
+        ? '#32899F'
+        : this.state.downloadStatus == 1
+        ? '#81c784'
+        : '#e80242';
     return (
       <>
         <View style={styles.container}>
@@ -145,6 +171,7 @@ export default class Sales extends Component {
                 students={this.state.students}
                 parent={this.state.userInfo}
                 download={this.download}
+                loading={this.state.loading}
               />
             </Tab>
             <Tab
@@ -159,6 +186,7 @@ export default class Sales extends Component {
                 students={this.state.students}
                 parent={this.state.userInfo}
                 download={this.download}
+                loading={this.state.loading}
               />
             </Tab>
             <Tab
@@ -173,6 +201,7 @@ export default class Sales extends Component {
                 students={this.state.students}
                 parent={this.state.userInfo}
                 download={this.download}
+                loading={this.state.loading}
               />
             </Tab>
           </Tabs>
@@ -184,8 +213,7 @@ export default class Sales extends Component {
             visible={this.state.downloadModal}
             animationType="slide">
             <View style={styles.downloadContainer}>
-              <View
-                style={[styles.downloadModal, {backgroundColor: color}]}>
+              <View style={[styles.downloadModal, {backgroundColor: color}]}>
                 <View style={styles.downloadStatus}>
                   {this.state.downloadStatus == 0 ? (
                     <>
@@ -194,7 +222,7 @@ export default class Sales extends Component {
                         {'جار تحميل الوصل...'}
                       </Text>
                     </>
-                  ) : this.state.downloadStatus ==1? (
+                  ) : this.state.downloadStatus == 1 ? (
                     <>
                       <Icon name="check-circle" size={25} color="#FFF" />
                       <Text style={[styles.downloadText]}>
@@ -254,12 +282,14 @@ const styles = StyleSheet.create({
     height: 50,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'green',
+    backgroundColor: '#e3e3e3',
+    elevation:3,
   },
   downloadStatus: {
     flex: 1,
     width: '95%',
     flexDirection: 'row',
+    elevation: 4,
     justifyContent: 'space-around',
     alignItems: 'center',
     // backgroundColor: 'red'
@@ -268,5 +298,8 @@ const styles = StyleSheet.create({
     fontFamily: 'Tajawal-Regular',
     fontSize: 16,
     color: '#FFF',
+  },
+  tooltipStyle: {
+    bottom: 0,
   },
 });
