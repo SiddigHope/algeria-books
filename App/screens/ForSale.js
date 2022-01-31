@@ -6,6 +6,7 @@ import {
   Text,
   FlatList,
   Dimensions,
+  ActivityIndicator,
   ImageBackground,
   TouchableWithoutFeedback,
   TouchableOpacity,
@@ -28,7 +29,9 @@ class ForSale extends Component {
       data: [],
       id: '',
       dataClone: [],
+      sold: [],
       cartItemsCount: 0,
+      activityIndicator: true,
       selectedItems: [],
     };
   }
@@ -36,9 +39,6 @@ class ForSale extends Component {
   componentDidMount() {
     this.getCartItems();
     this.checkUser();
-    // const student = this.props.route.params.student
-    // AsyncStorage.removeItem('cart')
-    // AsyncStorage.removeItem(student.MatriculeElv+'cart')
   }
 
   checkUser = async () => {
@@ -51,15 +51,80 @@ class ForSale extends Component {
         user: true,
         id: userJson.MatriculeParent,
         password: userJson.password,
-        ActivityIndicator: false,
+        // activityIndicator: false,
       });
-      this.getBooks();
+      this.getSoldBooks();
     }
+  };
+
+  getSoldBooks = async () => {
+    this.setState({
+      activityIndicator: true,
+    });
+    const student = this.props.route.params.student;
+    // console.log(student);
+    RNFetchBlob.fetch(
+      'POST',
+      mainDomain + 'getSoldBooks.php',
+      {
+        // Authorization: "Bearer access-token",
+        // otherHeader: "foo",
+        // 'Content-Type': 'multipart/form-data',
+        'Content-Type': 'application/json',
+      },
+      [
+        // to send data MatriculeElvFK
+        {name: 'MatriculeElvFK', data: String(student.MatriculeElv)},
+        {name: 'dist', data: String('12')},
+      ],
+    )
+      .then(resp => {
+        // console.log(resp.data)
+        const {selectedItems} = this.state;
+        const data = JSON.parse(resp.data);
+        const token = data.data; //"Don't touch this shit"
+        const jwt = jwt_decode(token);
+        const full = JSON.parse(jwt.data.data);
+        // const full = data
+        // console.log('this.state.id');
+        // console.log(full);
+        if (full.message || full.length == 0) {
+          this.setState({
+            selectedItems: [],
+            // setModalVisible: false,
+          });
+          this.getBooks();
+          return;
+        } else {
+          full.forEach(book => {
+            const book_ids = JSON.parse(book.book_list);
+            book['book_list'] = book_ids;
+            book_ids.forEach(element => {
+              const index = selectedItems.indexOf(element.book_id);
+              if (!(index > -1)) {
+                selectedItems.push(element.book_id);
+                // setModalVisible: false,
+              }
+              // console.log(selectedItems);
+            });
+          });
+        }
+        this.setState({
+          selectedItems: selectedItems,
+          // setModalVisible: false,
+        });
+        this.getBooks();
+      })
+      .catch(err => {
+        this.getBooks();
+        console.log('error response');
+        console.log(err);
+      });
   };
 
   getBooks = async () => {
     const student = this.props.route.params.student;
-    // console.log(student);
+    console.log(student);
     RNFetchBlob.fetch(
       'POST',
       mainDomain + 'getStudentBooks.php',
@@ -83,16 +148,19 @@ class ForSale extends Component {
         const jwt = jwt_decode(token);
         const full = JSON.parse(jwt.data.data);
         // const full = data
-        console.log('this.state.id');
-        console.log(full);
+        // console.log('this.state.id');
+        // console.log(full);
         this.setState({
           data: full.message ? [] : full,
           dataClone: full,
+          // setModalVisible: false,
+          activityIndicator: false,
+          // dataLoaded : true
         });
       })
       .catch(err => {
         this.setState({
-          setModalVisible: false,
+          activityIndicator: false,
         });
         console.log('error response');
         console.log(err);
@@ -139,7 +207,7 @@ class ForSale extends Component {
     );
     if (cart != null) {
       const jsonCart = JSON.parse(cart);
-      console.log('sdfsdfdsfs');
+      // console.log('sdfsdfdsfs');
       jsonCart.push(item);
       // console.log(jsonCart);
       // this.setState({
@@ -158,7 +226,7 @@ class ForSale extends Component {
 
     const sTotal = await AsyncStorage.getItem('cart');
     if (sTotal != null) {
-      console.log('1111111111');
+      // console.log('1111111111');
       const total = JSON.parse(sTotal);
       total.push(item);
       // console.log(item);
@@ -191,12 +259,19 @@ class ForSale extends Component {
   };
 
   render() {
+    if(this.state.activityIndicator){
+      return(
+        <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
+          <ActivityIndicator size='large' color="rgba(50,137,159,1)" />
+        </View>
+      )
+    }
     return (
       <View style={styles.container}>
         {/* cart item */}
         <TouchableOpacity
           onPress={() => {
-            console.log('cart');
+            // console.log('cart');
             this.props.navigation.navigate('Cart');
           }}
           style={styles.cartCont}>
@@ -211,6 +286,7 @@ class ForSale extends Component {
           keyExtractor={(item, index) => index.toString()}
           showsVerticalScrollIndicator={false}
           ListHeaderComponent={() => <View style={{height: 20}} />}
+          ListFooterComponent={() => <View style={{height: 80}} />}
           numColumns={3}
           renderItem={({item, index}) => {
             // console.log(item)
@@ -272,7 +348,7 @@ class ForSale extends Component {
                               backgroundColor: '#FFF',
                             }}
                             onPress={() => {
-                              console.log('adding item to the cart');
+                              // console.log('adding item to the cart');
                               this.addToCart(item);
                             }}>
                             <Icon

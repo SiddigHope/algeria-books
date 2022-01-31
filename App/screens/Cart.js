@@ -9,6 +9,7 @@ import {
   Modal,
   Dimensions,
   TouchableOpacity,
+  ActivityIndicator,
   Pressable,
 } from 'react-native';
 import AsyncStorage from '@react-native-community/async-storage';
@@ -34,8 +35,9 @@ export default class MyStudents extends Component {
       studentsClone: [],
       search: false,
       id: '',
-      total: 0,
+      total: '0.000',
       disabled: false,
+      activityIndicator: false,
     };
   }
 
@@ -43,7 +45,7 @@ export default class MyStudents extends Component {
     this.checkUser();
     const navigation = this.props.navigation;
     navigation.addListener('focus', () => {
-      this.getStudents();
+      this.checkUser();
     });
   }
 
@@ -71,7 +73,7 @@ export default class MyStudents extends Component {
         const token = data.data; //"Don't touch this shit"
         const jwt = jwt_decode(token);
         const full = JSON.parse(jwt.data.data);
-        console.log('11111');
+        // console.log(full);
         this.getStudentBooks(full);
         this.setState({
           // students: full,
@@ -89,7 +91,7 @@ export default class MyStudents extends Component {
 
   checkUser = async () => {
     const date = new Date(Date.now());
-    console.log(date.getHours());
+    // console.log(date.getHours());
     // AsyncStorage.removeItem('parentInfo')
     const user = await AsyncStorage.getItem('parentInfo');
     const userId = await AsyncStorage.getItem('parentId');
@@ -100,10 +102,10 @@ export default class MyStudents extends Component {
         user: true,
         id: userJson.MatriculeParent,
         password: userJson.password,
-        ActivityIndicator: false,
+        activityIndicator: true,
       });
+      this.getStudents();
     }
-    this.getStudents();
   };
 
   separator() {
@@ -115,7 +117,7 @@ export default class MyStudents extends Component {
   }
 
   getStudentBooks = async data => {
-    console.log('getStudentBooks');
+    // console.log('getStudentBooks');
     // console.log(data);
     const sCart = await AsyncStorage.getItem('cart');
     if (sCart != null) {
@@ -124,50 +126,80 @@ export default class MyStudents extends Component {
       let count = 0;
       let whole = 0;
       const students = [];
-      data.forEach(async student => {
-        const studentCart = await AsyncStorage.getItem(
-          String(student.MatriculeElv + 'cart'),
-        );
-        if (studentCart != null) {
-          const jsonCart = JSON.parse(studentCart);
-          let total = 0;
-          const books = [];
-          jsonCart.forEach(element => {
-            // console.log('element')
-            // console.log(element)
-            books.push({book_id: element.book_id, price: element.price});
-            total += Number(element.price);
-          });
-          student.books = books;
-          student.total = total;
-          whole += total;
-          students.push(student);
-          if (student.LivreGratuitElv == '1') {
-            this.setState({
-              disabled: true,
+      // console.log(data);
+      try {
+        data.forEach(async student => {
+          const studentCart = await AsyncStorage.getItem(
+            String(student.MatriculeElv + 'cart'),
+          );
+          if (studentCart != null) {
+            const jsonCart = JSON.parse(studentCart);
+            // console.log('sCartdqwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww');
+            // console.log(jsonCart);
+            let total = 0;
+            const books = [];
+            jsonCart.forEach(element => {
+              // console.log('element')
+              // console.log(element)
+              books.push({book_id: element.book_id, price: element.price});
+              total += Number(element.price);
             });
+            student.books = books;
+            student.total = total;
+            whole += total;
+            if (total != 0) {
+              students.push(student);
+            }
+            if (student.LivreGratuitElv == '1') {
+              this.setState({
+                disabled: true,
+                activityIndicator: false,
+              });
+            }
           }
-        }
-        count += 1;
-        console.log(data);
-        this.setState({
-          students,
-          total: whole,
+          count += 1;
+          // console.log(data);
+          this.setState({
+            students,
+            total: whole,
+            activityIndicator: false,
+          });
         });
-      });
+      } catch (error) {
+        console.log(error);
+        this.setState({
+          activityIndicator: false,
+        });
+      }
+    }else{
+      this.setState({
+        activityIndicator: false,
+      })
     }
   };
 
   _listFooter = (item, index) => {
-    console.log('footer');
+    // console.log('footer');
     // console.log(index);
     const string = 'اجمالي للمشتريات:';
     const totalPay = 'تأكيد عملية الشراء';
+    let total = String(this.state.total).split('.');
+    let decimal = total.length > 1 ? total[1].slice(0, 2) : '00';
+
+    if (this.state.total == 0) {
+      return (
+        <Text
+          style={[styles.payAsWhole, {alignSelf: 'center', color: '#e57373'}]}>
+          {'لا توجد مشتريات على السلة ...'}
+        </Text>
+      );
+    }
+
     if (this.state.disabled) {
       return (
         <View style={styles.footer}>
           <Text style={styles.payAsWhole}>
-            {string + this.state.total + ' دجـ'}
+            {string + total[0] + '.' + decimal + ' دجـ'}
           </Text>
         </View>
       );
@@ -175,7 +207,7 @@ export default class MyStudents extends Component {
     return (
       <View style={styles.footer}>
         <Text style={styles.payAsWhole}>
-          {string + this.state.total + ' دجـ'}
+          {string + total[0] + '.' + decimal + ' دجـ'}
         </Text>
         <Pressable
           onPress={() =>
@@ -202,13 +234,12 @@ export default class MyStudents extends Component {
         <View style={styles.container}>
           <TouchableOpacity
             onPress={() => {
-              console.log('cartItems');
+              // console.log('cartItems');
               this.props.navigation.navigate('CartItems');
             }}
             style={styles.cartCont}>
             <Icon name="cart-outline" size={30} color="rgba(50,137,159,1)" />
           </TouchableOpacity>
-
           <View
             style={[
               styles.newTopContainer,
@@ -226,55 +257,62 @@ export default class MyStudents extends Component {
               </View>
             </View>
           </View>
-          <FlatList
-            data={this.state.students}
-            keyExtractor={(item, index) => index.toString()}
-            showsVerticalScrollIndicator={false}
-            ListFooterComponent={this._listFooter}
-            renderItem={(item, index) => {
-              let backgroundColor = '#FFF';
-              let elevation = 3;
-              if (item.index % 2 == 1) {
-                backgroundColor = '#FFF';
-                elevation = 0;
-              }
-              return (
-                <>
-                  <View style={[styles.newContainer, {backgroundColor}]}>
-                    <View style={[styles.rowContainer]}>
-                      <TouchableOpacity
-                        onPress={() =>
-                          this.props.navigation.navigate('Payment', {
-                            item: item.item,
-                            type: '1',
-                            total: item.item.total,
-                            students: item.item,
-                          })
-                        }
-                        style={styles.rowData}>
-                        <Icon
-                          name="account-cash-outline"
-                          color="#81c784"
-                          size={25}
-                        />
-                      </TouchableOpacity>
-                      <Pressable style={styles.rowData}>
-                        <Text style={styles.content}>
-                          {' '}
-                          {item.item.total + ' دجـ'}{' '}
-                        </Text>
-                      </Pressable>
-                      <Pressable style={styles.rowData}>
-                        <Text style={styles.content}>
-                          {item.item.PrenomArElv}
-                        </Text>
-                      </Pressable>
+          {this.state.activityIndicator ? (
+            <View
+              style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
+              <ActivityIndicator color="rgba(50,137,159,1)" size="large" />
+            </View>
+          ) : (
+            <FlatList
+              data={this.state.students}
+              keyExtractor={(item, index) => index.toString()}
+              showsVerticalScrollIndicator={false}
+              ListFooterComponent={this._listFooter}
+              renderItem={(item, index) => {
+                let backgroundColor = '#FFF';
+                let elevation = 3;
+                if (item.index % 2 == 1) {
+                  backgroundColor = '#FFF';
+                  elevation = 0;
+                }
+                let total = String(item.item.total).split('.');
+                let decimal = total.length > 1 ? total[1].slice(0, 2) : '00';
+                let price = total[0] + '.' + decimal;
+                return (
+                  <>
+                    <View style={[styles.newContainer, {backgroundColor}]}>
+                      <View style={[styles.rowContainer]}>
+                        <TouchableOpacity
+                          onPress={() =>
+                            this.props.navigation.navigate('Payment', {
+                              item: item.item,
+                              type: '1',
+                              total: price,
+                              students: item.item,
+                            })
+                          }
+                          style={styles.rowData}>
+                          <Icon
+                            name="account-cash-outline"
+                            color="#81c784"
+                            size={25}
+                          />
+                        </TouchableOpacity>
+                        <Pressable style={styles.rowData}>
+                          <Text style={styles.content}> {price + ' دجـ'} </Text>
+                        </Pressable>
+                        <Pressable style={styles.rowData}>
+                          <Text style={styles.content}>
+                            {item.item.PrenomArElv}
+                          </Text>
+                        </Pressable>
+                      </View>
                     </View>
-                  </View>
-                </>
-              );
-            }}
-          />
+                  </>
+                );
+              }}
+            />
+          )}
         </View>
         <SideBar navigator={this.props.navigation} />
       </>

@@ -49,10 +49,18 @@ export default class CartItems extends Component {
       const sStdItems = await AsyncStorage.getItem(String(item.stdId) + 'cart');
       if (sStdItems != null) {
         const stdItems = JSON.parse(sStdItems);
+        // console.log('stdItems.total - item.price')
+        // console.log(stdItems[0].total)
+        // return
         const stdArray = [];
         stdItems.forEach(element => {
           if (element.cart_id != item.cart_id) {
             stdArray.push(element);
+            AsyncStorage.setItem(
+              String(item.stdId) + 'cart',
+              JSON.stringify(stdArray),
+            );
+          } else if (stdItems.length == 1) {
             AsyncStorage.setItem(
               String(item.stdId) + 'cart',
               JSON.stringify(stdArray),

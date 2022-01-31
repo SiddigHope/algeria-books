@@ -1,72 +1,66 @@
 import React, {Component} from 'react';
 import {
-  Alert,
-  TextInput,
-  Text,
   StyleSheet,
   View,
-  FlatList,
-  Modal,
-  TouchableOpacity,
-  Pressable,
   StatusBar,
   Dimensions,
-  Image,
+  Text,
+  Modal,
+  ActivityIndicator,
 } from 'react-native';
 import AsyncStorage from '@react-native-community/async-storage';
 import RNFetchBlob from 'rn-fetch-blob';
 import jwt_decode from 'jwt-decode';
-import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import _ from 'lodash';
 import {mainDomain} from '../config/var';
-import {
-  Container,
-  Body,
-  Header,
-  Left,
-  Right,
-  Drawer,
-  Tab,
-  Tabs,
-  DefaultTabBar,
-} from 'native-base';
+import {Tab, Tabs, DefaultTabBar} from 'native-base';
 import SideBar from './../config/SideBar';
 import OnlineSalesComponent from '../Components/OnlineSalesComponent';
 import CashSalesComponent from '../Components/CashSalesComponent';
+import FreeSalesComponent from '../Components/FreeSalesComponent';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
 const {width, height} = Dimensions.get('window');
+
 export default class Sales extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      days: ['السبت', 'الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس'],
       day: '',
       class: 'إختر الفوج',
       setModalVisible: false,
       classes: [],
       onlineOrders: [],
       cashOrders: [],
+      freeOrders: [],
       search: false,
       id: '',
+      userInfo: [],
+      students: [],
+      downloadModal: false,
+      downloadStatus: 0,
+      first: false,
+      loading: false,
     };
+
+    this.download = this.download.bind(this);
+    this.setState = this.setState.bind(this);
   }
 
   componentDidMount() {
     this.checkUser();
-    // this.getStudents();
   }
 
   checkUser = async () => {
-    // const date = new Date(Date.now());
-    // console.log(date.getHours());
-    // AsyncStorage.removeItem('parentInfo')
     const user = await AsyncStorage.getItem('parentInfo');
-    const userId = await AsyncStorage.getItem('parentId');
+    const students = await AsyncStorage.getItem('students');
     if (user != null) {
       const userJson = JSON.parse(user);
+      const studentsJson = JSON.parse(students);
       // console.log(userJson);
       this.setState({
         user: true,
+        userInfo: userJson,
+        students: studentsJson,
         id: userJson.MatriculeParent,
         ActivityIndicator: false,
       });
@@ -76,42 +70,71 @@ export default class Sales extends Component {
 
   getOrders = async () => {
     // const userDist = await AsyncStorage.getItem('teacherDist');
-    RNFetchBlob.fetch(
-      'POST',
-      mainDomain + 'getOrders.php',
-      {
-        // Authorization: "Bearer access-token",
-        // otherHeader: "foo",
-        // 'Content-Type': 'multipart/form-data',
-        'Content-Type': 'application/json',
-      },
-      [
-        // to send data
-        {name: 'parentId', data: String(this.state.id)},
-        // { name: 'div', data: String('1100001') },
-        // {name: 'dist', data: String('12')},
-      ],
-    )
-      .then(resp => {
-        console.log(resp.data);
-        const data = JSON.parse(resp.data);
-        const token = data.data; //"Don't touch this shit"
-        const jwt = jwt_decode(token);
-        const full = JSON.parse(jwt.data.data);
-        // const full = data
-        // console.log(this.state.id)
-        this.setState({
-          onlineOrders: full.filter(order => order.online_paid == '1'),
-          cashOrders: full.filter(order => order.online_paid == '0'),
+    this.setState({
+      loading: true,
+    });
+    try {
+      RNFetchBlob.fetch(
+        'POST',
+        mainDomain + 'getOrders.php',
+        {
+          // Authorization: "Bearer access-token",
+          // otherHeader: "foo",
+          // 'Content-Type': 'multipart/form-data',
+          'Content-Type': 'application/json',
+        },
+        [
+          // to send data
+          {name: 'parentId', data: String(this.state.id)},
+          // { name: 'div', data: String('1100001') },
+          // {name: 'dist', data: String('12')},
+        ],
+      )
+        .then(resp => {
+          // console.log(resp.data);
+          const data = JSON.parse(resp.data);
+          const token = data.data; //"Don't touch this shit"
+          const jwt = jwt_decode(token);
+          const full = JSON.parse(jwt.data.data);
+          // const full = data
+  
+          if (full.message) {
+            return;
+          }
+          this.setState({
+            onlineOrders: full.filter(order => order.online_paid == '1'),
+            cashOrders: full.filter(order => order.online_paid == '0'),
+            freeOrders: full.filter(order => order.online_paid == '2'),
+            loading: false,
+          });
+        })
+        .catch(err => {
+          this.setState({
+            setModalVisible: false,
+          });
+          console.log('error response');
+          console.log(err);
+          this.setState({
+            loading: false,
+          });
         });
-      })
-      .catch(err => {
-        this.setState({
-          setModalVisible: false,
-        });
-        console.log('error response');
-        console.log(err);
+    } catch (error) {
+      this.setState({
+        setModalVisible: false,
       });
+      console.log('error response');
+      console.log(error);
+      this.setState({
+        loading: false,
+      });
+    }
+  };
+
+  download = (modal, status) => {
+    this.setState({
+      downloadModal: modal,
+      downloadStatus: status,
+    });
   };
 
   renderTabBar = props => {
@@ -120,20 +143,16 @@ export default class Sales extends Component {
   };
 
   render() {
+    let color =
+      this.state.downloadStatus == 0
+        ? '#32899F'
+        : this.state.downloadStatus == 1
+        ? '#81c784'
+        : '#e80242';
     return (
       <>
         <View style={styles.container}>
           <StatusBar backgroundColor="#32899F" />
-          <Header
-            style={{backgroundColor: '#32899F'}}
-            androidStatusBarColor="#32899F">
-            <Left
-              style={{flexDirection: 'row', flex: 1, marginLeft: 15}}></Left>
-            <Body>
-              <Text style={styles.title}>{'المشتريات'}</Text>
-            </Body>
-            <Right style={{marginRights: 15}}></Right>
-          </Header>
           <Tabs
             renderTabBar={this.renderTabBar}
             initialPage={1}
@@ -144,10 +163,29 @@ export default class Sales extends Component {
               textStyle={styles.text}
               activeTextStyle={{color: '#FFF', fontFamily: 'Tajawal-Regular'}}
               activeTabStyle={styles.active}
-              heading="دفع نقدي">
+              heading="الكتب المجانية">
+              <FreeSalesComponent
+                data={this.state.freeOrders}
+                navigation={this.props.navigation}
+                students={this.state.students}
+                parent={this.state.userInfo}
+                download={this.download}
+                loading={this.state.loading}
+              />
+            </Tab>
+            <Tab
+              tabStyle={styles.tabStyle}
+              textStyle={styles.text}
+              activeTextStyle={{color: '#FFF', fontFamily: 'Tajawal-Regular'}}
+              activeTabStyle={styles.active}
+              heading="دفع بريدي">
               <CashSalesComponent
                 data={this.state.cashOrders}
                 navigation={this.props.navigation}
+                students={this.state.students}
+                parent={this.state.userInfo}
+                download={this.download}
+                loading={this.state.loading}
               />
             </Tab>
             <Tab
@@ -159,11 +197,51 @@ export default class Sales extends Component {
               <OnlineSalesComponent
                 data={this.state.onlineOrders}
                 navigation={this.props.navigation}
+                students={this.state.students}
+                parent={this.state.userInfo}
+                download={this.download}
+                loading={this.state.loading}
               />
             </Tab>
           </Tabs>
+          <Modal
+            transparent={true}
+            onBackdropPress={() => this.setState({downloadModal: false})}
+            onSwipeComplete={() => this.setState({downloadModal: false})}
+            onRequestClose={() => this.setState({downloadModal: false})}
+            visible={this.state.downloadModal}
+            animationType="slide">
+            <View style={styles.downloadContainer}>
+              <View style={[styles.downloadModal, {backgroundColor: color}]}>
+                <View style={styles.downloadStatus}>
+                  {this.state.downloadStatus == 0 ? (
+                    <>
+                      <ActivityIndicator size="small" color="#FFF" />
+                      <Text style={[styles.downloadText]}>
+                        {'جار تحميل الوصل...'}
+                      </Text>
+                    </>
+                  ) : this.state.downloadStatus == 1 ? (
+                    <>
+                      <Icon name="check-circle" size={25} color="#FFF" />
+                      <Text style={[styles.downloadText]}>
+                        {'تم تحميل الوصل بنجاح'}
+                      </Text>
+                    </>
+                  ) : (
+                    <>
+                      <Icon name="close-circle" size={25} color="#FFF" />
+                      <Text style={[styles.downloadText]}>
+                        {'لم تتم العملية حاول مرة اخرى'}
+                      </Text>
+                    </>
+                  )}
+                </View>
+              </View>
+            </View>
+          </Modal>
         </View>
-        <SideBar navigator={this.props.navigation} />
+        {/* <SideBar navigator={this.props.navigation} /> */}
       </>
     );
   }
@@ -174,13 +252,6 @@ const styles = StyleSheet.create({
     width,
     height: (height * 90) / 100,
     backgroundColor: '#e3e3e3',
-  },
-  title: {
-    fontSize: 20,
-    fontFamily: 'Tajawal-Regular',
-    alignSelf: 'center',
-    color: '#FFF',
-    marginRight: 15,
   },
   tabStyle: {
     backgroundColor: '#32899F',
@@ -195,161 +266,39 @@ const styles = StyleSheet.create({
     color: '#FFF',
     // backgroundColor: '#8f5ba6',
   },
-  textInput: {
-    marginVertical: 5,
-    alignSelf: 'center',
-    height: 50,
-    width: '95%',
-    justifyContent: 'center',
-    borderRadius: 10,
-    fontFamily: 'Tajawal-Regular',
-    fontSize: 18,
-    alignItems: 'center',
-    // color: '#9e9e9e',
-    backgroundColor: 'rgba(7,93,84,.5)',
-  },
-  select: {
-    fontFamily: 'Tajawal-Regular',
-    fontSize: 18,
-    color: '#e3e3e3',
-    // letterSpacing: 5
-  },
-  rowContainer: {
-    // height: 70,
-    width: '95%',
-    // backgroundColor: '#FFF',
-    flexDirection: 'row',
-    justifyContent: 'space-evenly',
-    alignItems: 'center',
-    marginVertical: 5,
-    marginBottom: 10,
-  },
-  rowTopContainer: {
-    // height: 70,
-    width: '95%',
-    // backgroundColor: '#FFF',
-    flexDirection: 'row',
-    justifyContent: 'space-evenly',
-    alignItems: 'center',
-    marginVertical: 5,
-    marginBottom: 10,
-  },
-  rowData: {
-    height: '100%',
-    flex: 1,
-    // backgroundColor:'red',
-    alignItems: 'center',
-  },
-  rowTopData: {
-    height: '100%',
-    flex: 1,
-  },
-  textTitle: {
-    fontFamily: 'Tajawal-Bold',
-    textAlign: 'center',
-    fontSize: 16,
-    color: '#444',
-  },
-  content: {
-    fontFamily: 'Tajawal-Regular',
-    textAlign: 'center',
-    fontSize: 16,
-    color: '#444',
-    // textAlign: 'right'
-  },
-  newContainer: {
-    paddingVertical: 20,
-    // backgroundColor: '#e3e3e3',
-    // alignItems: "center",
-    // justifyContent: "center",
-    width: '95%',
-    marginVertical: 5,
-    // elevation: 3,
-    alignSelf: 'center',
-    borderRadius: 10,
-    elevation: 3,
-  },
-  modalContainer: {
-    height: '100%',
+  downloadContainer: {
+    height: 70,
     width: '100%',
-    backgroundColor: 'rgba(0,0,0,0.6)',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  modal: {
-    backgroundColor: '#FFF',
-    // height: '50%',
-    width: '90%',
-    borderRadius: 30,
-    paddingTop: 20,
-  },
-  rowContainer1: {
-    height: 60,
-    backgroundColor: '#FFF',
-    marginHorizontal: 20,
-    marginVertical: 5,
-    justifyContent: 'space-evenly',
-    alignItems: 'center',
-  },
-  newTopContainer: {
-    // paddingVertical: 20,
-    // backgroundColor: '#e3e3e3',
-    alignItems: 'center',
-    justifyContent: 'center',
-    width: '95%',
-    marginVertical: 5,
-    elevation: 3,
-    flexDirection: 'row',
-    alignSelf: 'center',
-    borderRadius: 10,
-    // elevation: 3,
-  },
-  notes: {
-    color: '#32899F',
-    fontSize: 16,
-    fontFamily: 'Tajawal-Regular',
-  },
-  noteContainer: {
-    marginBottom: 10,
-    borderRadius: 10,
-    height: 200,
-    width: '95%',
-    alignSelf: 'center',
-    backgroundColor: '#e3e3e3',
-  },
-  rowContainer2: {
-    height: 50,
-    backgroundColor: '#FFF',
-    flexDirection: 'row',
-    justifyContent: 'space-evenly',
-    alignItems: 'center',
-    marginBottom: 30,
-    // elevation: 3
-  },
-  rowData1: {
-    flex: 1,
     height: '100%',
-    // backgroundColor: '#e3e3e3',
-    marginHorizontal: 3,
-    // borderRadius: 20
-  },
-  btnsearch: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    backgroundColor: '#32899F',
-    position: 'absolute',
-    bottom: 30,
-    right: 30,
-    elevation: 3,
-    justifyContent: 'center',
+    // backgroundColor: 'red',
     alignItems: 'center',
   },
-  inputText: {
+  downloadModal: {
+    position: 'absolute',
+    bottom: 50,
+    width: '90%',
+    borderRadius: 20,
     height: 50,
-    color: '#444',
-    // fontSize: 18
-    textAlign: 'right',
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#e3e3e3',
+    elevation:3,
+  },
+  downloadStatus: {
+    flex: 1,
+    width: '95%',
+    flexDirection: 'row',
+    elevation: 4,
+    justifyContent: 'space-around',
+    alignItems: 'center',
+    // backgroundColor: 'red'
+  },
+  downloadText: {
     fontFamily: 'Tajawal-Regular',
+    fontSize: 16,
+    color: '#FFF',
+  },
+  tooltipStyle: {
+    bottom: 0,
   },
 });

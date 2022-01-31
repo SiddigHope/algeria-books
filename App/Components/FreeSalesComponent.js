@@ -7,13 +7,13 @@ import {
   ActivityIndicator,
   ToastAndroid,
 } from 'react-native';
+import {getPermission, mainDomain, openPdf} from '../config/var';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import {checkFile, getPermission, mainDomain, openPdf} from '../config/var';
 import RNFetchBlob from 'rn-fetch-blob';
 import {now} from 'moment';
-import OnlineComponent from './OnlineComponent';
+import FreeComponent from './FreeComponent';
 
-export default class OnlineSalesComponent extends Component {
+export default class FreeSalesComponent extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -40,9 +40,7 @@ export default class OnlineSalesComponent extends Component {
 
   checkFile = item => {
     const file =
-      '/storage/emulated/0/receipts/order-' +
-      item.order_id +
-      '-golden-card.pdf';
+      '/storage/emulated/0/receipts/order-' + item.order_id + '-free-books.pdf';
     getPermission();
     RNFetchBlob.fs
       .exists(file)
@@ -57,13 +55,15 @@ export default class OnlineSalesComponent extends Component {
 
   getOrderDetails = item => {
     getPermission();
+
     const sorryText = 'عذرا لا يمكنك طباعة الوصل بعد عملية الشراء';
     if (item.receipe > 0) {
       ToastAndroid.show(sorryText, ToastAndroid.LONG);
       return;
     }
-    // this is to set downloading sign for the user
+
     this.props.download(true, 0);
+    // console.log('sdjnchjbds');
     // function loop through all the students and return the student who belongs to this particular order
     const filtering = student => student.MatriculeElv == item.eleve;
 
@@ -77,9 +77,8 @@ export default class OnlineSalesComponent extends Component {
     const bookIds = book_list.map(mapping);
 
     const {dirs} = RNFetchBlob.fs;
-    // console.log(dirs)
-    // return
-    const downloadFileName = 'order-' + item.order_id + '-golden-card.pdf';
+    // console.log(dirs.DownloadDir)
+    const downloadFileName = 'order-' + item.order_id + '-free-books.pdf';
 
     // console.log(student)
     // return
@@ -115,7 +114,7 @@ export default class OnlineSalesComponent extends Component {
           {name: 'division', data: String(student[0].division)},
           {name: 'institution', data: String(student[0].institution)},
           {name: 'books', data: String(bookIds)},
-          {name: 'pdfType', data: String('ONLINE')},
+          {name: 'pdfType', data: String('FREE')},
         ],
       )
         .then(async resp => {
@@ -206,7 +205,7 @@ export default class OnlineSalesComponent extends Component {
             keyExtractor={(item, index) => index.toString()}
             // ItemSeparatorComponent={() => this.separator()}
             renderItem={(item, index) => (
-              <OnlineComponent
+              <FreeComponent
                 item={item}
                 index={index}
                 checkFile={this.checkFile}

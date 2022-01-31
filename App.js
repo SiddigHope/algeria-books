@@ -22,6 +22,7 @@ import Absence from './App/Components/Absence';
 import AddStudent from './App/Components/AddStudent';
 import Messages from './App/Components/Messages';
 import Guidence from './App/Components/Guidence';
+import OrdersStatus from './App/screens/OrdersStatus';
 
 class App extends Component {
   constructor(props) {
@@ -70,13 +71,6 @@ function Stacks() {
       <Stack.Screen
         name="Home"
         component={Home}
-        options={{
-          headerShown: false,
-        }}
-      />
-      <Stack.Screen
-        name="Sales"
-        component={Sales}
         options={{
           headerShown: false,
         }}
@@ -141,6 +135,44 @@ function Stacks() {
             <Text style={{fontFamily: 'Tajawal-Regular', color: '#FFF'}}>
               {' '}
               {'الكتب المتاحة'}{' '}
+            </Text>
+          ),
+        }}
+      />
+      <Stack.Screen
+        name="Sales"
+        component={Sales}
+        options={{
+          headerShown: true,
+          // headerTitleAlign:'center',
+          headerTintColor: '#FFF',
+          headerStyle: {
+            backgroundColor: '#32899F',
+          },
+          headerBackTitleStyle: {alignSelf: 'flex-start'},
+          title: (
+            <Text style={{fontFamily: 'Tajawal-Regular', color: '#FFF'}}>
+              {' '}
+              {'المشتريات'}{' '}
+            </Text>
+          ),
+        }}
+      />
+      <Stack.Screen
+        name="OrdersStatus"
+        component={OrdersStatus}
+        options={{
+          headerShown: true,
+          // headerTitleAlign:'center',
+          headerTintColor: '#FFF',
+          headerStyle: {
+            backgroundColor: '#32899F',
+          },
+          headerBackTitleStyle: {alignSelf: 'flex-start'},
+          title: (
+            <Text style={{fontFamily: 'Tajawal-Regular', color: '#FFF'}}>
+              {' '}
+              {'حالة الطلبات'}{' '}
             </Text>
           ),
         }}

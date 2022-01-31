@@ -24,26 +24,30 @@ import jwt_decode from 'jwt-decode';
 import DeviceInfo from 'react-native-device-info';
 import {CustomTabs} from 'react-native-custom-tabs';
 import {mainDomain} from '../config/var';
+import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 
 const {width, height} = Dimensions.get('window');
 
 export default class Login extends PureComponent {
-  state = {
-    userData: '',
-    connected: true,
-    imei: '',
-    id: '',
-    // id: 'abdes25021@gmail.com',
-    setModalVisible: false,
-    user: false,
-    prev: '',
-    userDist: '',
-    biometryType: null,
-    ActivityIndicator: false,
-    password: '',
-    // password: '123456',
-    OsVer: '',
-  };
+  constructor(props) {
+    super(props);
+    this.state = {
+      userData: '',
+      connected: true,
+      imei: '',
+      id: '',
+      // id: 'abdes2502@gmail.com',
+      setModalVisible: false,
+      user: false,
+      prev: '',
+      userDist: '',
+      biometryType: null,
+      ActivityIndicator: false,
+      password: '',
+      // password: '123456',
+      OsVer: '',
+    };
+  }
 
   async connect() {
     NetInfo.addEventListener(state => {
@@ -67,10 +71,10 @@ export default class Login extends PureComponent {
       );
 
       if (granted === true || granted === PermissionsAndroid.RESULTS.GRANTED) {
-        console.log('granted');
+        // console.log('granted');
         this.signup();
       } else {
-        console.log('not granted');
+        // console.log('not granted');
         Alert.alert(
           'تنبيه',
           'يجب السماح للتطبيق بالوصول لبيانات الهاتف',
@@ -120,14 +124,12 @@ export default class Login extends PureComponent {
   };
 
   checkUser = async () => {
-    const date = new Date(Date.now());
-    console.log(date.getHours());
     // AsyncStorage.removeItem('parentInfo')
     const user = await AsyncStorage.getItem('parentInfo');
     const userId = await AsyncStorage.getItem('parentId');
     if (user != null) {
       const userJson = JSON.parse(user);
-      console.log(userJson);
+      // console.log(userJson);
       this.setState({
         user: true,
         id: userId,
@@ -177,16 +179,16 @@ export default class Login extends PureComponent {
           ],
         )
           .then(resp => {
-            console.log('*************************');
-            console.log(resp.data);
+            // console.log('*************************');
+            // console.log(resp.data);
             const data = JSON.parse(resp.data);
-            console.log('*************************\\\\\\\\\\\\\\');
-            console.log('works here');
+            // console.log('*************************\\\\\\\\\\\\\\');
+            // console.log('works here');
             const token = data.data; //"Don't touch this shit"
             const jwt = jwt_decode(token);
             const full = JSON.parse(jwt.data.data);
-            console.log(full);
-            console.log(full.serial_parent);
+            // console.log(full);
+            // console.log(full.serial_parent);
             if (this.state.user) {
               this.setState({
                 userData: full,
@@ -241,9 +243,12 @@ export default class Login extends PureComponent {
   };
 
   confirmSignin = async () => {
+    this.setState({
+      ActivityIndicator: true,
+    });
     if (this.state.userData != '') {
       const id = await DeviceInfo.getUniqueId();
-      console.log(id);
+      // console.log(id);
       ///////////////////////////////////////
       if (this.state.prev == '' || this.state.prev == id) {
         RNFetchBlob.fetch(
@@ -261,7 +266,7 @@ export default class Login extends PureComponent {
           ],
         )
           .then(res => {
-            console.log(res.data);
+            // console.log(res.data);
             const data = JSON.parse(res.data);
             const token = data.data; //"Don't touch this shit"
             const jwt = jwt_decode(token);
@@ -328,8 +333,12 @@ export default class Login extends PureComponent {
 
   render() {
     return (
-      <KeyboardAvoidingView
-        behavior={Platform.OS == 'ios' ? 'padding' : 'height'}
+      <KeyboardAwareScrollView
+        ref={ref => (this.scroll = ref)}
+        // innerRef={ref => {
+        //   this.scroll = ref;
+        // }}
+        enableOnAndroid={true}
         style={styles.container}>
         <Modal
           transparent={true}
@@ -414,18 +423,26 @@ export default class Login extends PureComponent {
                       justifyContent: 'center',
                     },
                   ]}>
-                  <Text
-                    style={[
-                      styles.textTitle,
-                      {
-                        color: '#e3e3e3',
-                        fontFamily: 'Tajawal-Bold',
-                        alignSelf: 'center',
-                      },
-                    ]}>
-                    {' '}
-                    {'تسجيل الدخول'}{' '}
-                  </Text>
+                  {this.state.ActivityIndicator ? (
+                    <ActivityIndicator
+                      animating={this.state.ActivityIndicator}
+                      color="#e3e3e3"
+                      size="small"
+                    />
+                  ) : (
+                    <Text
+                      style={[
+                        styles.textTitle,
+                        {
+                          color: '#e3e3e3',
+                          fontFamily: 'Tajawal-Bold',
+                          alignSelf: 'center',
+                        },
+                      ]}>
+                      {' '}
+                      {'تسجيل الدخول'}{' '}
+                    </Text>
+                  )}
                 </TouchableOpacity>
               </View>
             </View>
@@ -448,7 +465,7 @@ export default class Login extends PureComponent {
             style={{
               justifyContent: 'center',
               alignItems: 'center',
-              // backgroundColor: 'red',
+              backgroundColor: 'rgba(255,255,255,0.5)',
               marginTop: '70%',
             }}>
             {!this.state.user ? (
@@ -459,12 +476,18 @@ export default class Login extends PureComponent {
                     style={styles.inputText}
                     value={this.state.id}
                     placeholder="البريد الاكتروني"
+                    blurOnSubmit={false}
+                    onFocus={() => {
+                      this.scroll.scrollToPosition(0, 10000000, true);
+                    }}
                     placeholderTextColor="#32899F"
+                    onSubmitEditing={() => this.password.focus()}
                     onChangeText={text => this.setState({id: text})}
                   />
                 </View>
                 <View style={styles.inputView}>
                   <TextInput
+                    ref={password => (this.password = password)}
                     textAlign="right"
                     style={[styles.inputText]}
                     secureTextEntry
@@ -496,13 +519,16 @@ export default class Login extends PureComponent {
             </TouchableOpacity>
           </View>
           {this.state.user ? null : (
-            <Text style={styles.signin} onPress={() => this.openBrowser()}>
+            <Text
+              ref={text => (this.noAccountText = text)}
+              style={styles.signin}
+              onPress={() => this.openBrowser()}>
               {' '}
               {'ليس لديك حساب ؟'}{' '}
             </Text>
           )}
         </View>
-      </KeyboardAvoidingView>
+      </KeyboardAwareScrollView>
     );
   }
 }

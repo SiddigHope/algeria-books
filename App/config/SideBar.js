@@ -37,8 +37,8 @@ export default SideBar = props => {
           })
         }>
         <Icon style={styles.icon} name="cart-outline" color="#000" size={20} />
-        <Text style={{fontFamily: 'Tajawal-Regular'}}>
-          {'  سلة المستريات '}
+        <Text style={{fontFamily: 'Tajawal-Regular', textAlign: 'center'}}>
+          {'السلة '}
         </Text>
       </TouchableOpacity>
 
@@ -50,12 +50,23 @@ export default SideBar = props => {
           })
         }>
         <Icon style={styles.icon} name="sale" color="#000" size={20} />
-        <Text style={{fontFamily: 'Tajawal-Regular'}}>{'  المشتريات '}</Text>
+        <Text style={{fontFamily: 'Tajawal-Regular', textAlign: 'center'}}>{'  المشتريات '}</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity
+        style={styles.item}
+        onPress={() =>
+          props.navigator.navigate('OrdersStatus', {
+            navigation: props.navigator,
+          })
+        }>
+        <Icon style={styles.icon} name="bookmark-check-outline" color="#000" size={20} />
+        <Text style={{fontFamily: 'Tajawal-Regular', textAlign: 'center'}}>{'  حالة الطلبات '}</Text>
       </TouchableOpacity>
 
       <TouchableOpacity onPress={() => signout()} style={styles.item}>
         <Icon style={styles.icon} name="logout" color="#000" size={20} />
-        <Text style={{fontFamily: 'Tajawal-Regular'}}> {'تسجيل خروج'} </Text>
+        <Text style={{fontFamily: 'Tajawal-Regular', textAlign: 'center'}}> {'تسجيل خروج'} </Text>
       </TouchableOpacity>
     </View>
   );

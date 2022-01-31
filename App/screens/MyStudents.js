@@ -12,6 +12,7 @@ import {
   StatusBar,
   Image,
   Dimensions,
+  ActivityIndicator,
 } from 'react-native';
 import AsyncStorage from '@react-native-community/async-storage';
 import RNFetchBlob from 'rn-fetch-blob';
@@ -36,16 +37,24 @@ export default class MyStudents extends Component {
       studentsClone: [],
       search: false,
       id: '',
+      loadingData: false,
     };
   }
 
   componentDidMount() {
+    // AsyncStorage.clear()
     this.checkUser();
     // this.getStudents();
+    const navigation = this.props.navigation;
+    // navigation.addListener('focus', () => {
+    //   this.getStudents();
+    // });
     BackHandler.addEventListener('hardwareBackPress', this.handleBackPress);
   }
 
   componentWillUnmount() {
+    // const navigation = this.props.navigation;
+    // navigation.removeListener('focus');
     BackHandler.removeEventListener('hardwareBackPress', this.handleBackPress);
   }
 
@@ -71,8 +80,11 @@ export default class MyStudents extends Component {
   };
 
   checkUser = async () => {
+    this.setState({
+      loadingData: true,
+    });
     const date = new Date(Date.now());
-    console.log(date.getHours());
+    // console.log(date.getHours());
     // AsyncStorage.removeItem('parentInfo')
     const user = await AsyncStorage.getItem('parentInfo');
     const userId = await AsyncStorage.getItem('parentId');
@@ -98,6 +110,9 @@ export default class MyStudents extends Component {
   }
 
   getStudents = async () => {
+    this.setState({
+      loadingData: true,
+    });
     // const userDist = await AsyncStorage.getItem('teacherDist');
     RNFetchBlob.fetch(
       'POST',
@@ -116,22 +131,25 @@ export default class MyStudents extends Component {
       ],
     )
       .then(resp => {
-        console.log(resp.data);
+        // console.log(resp.data);
         const data = JSON.parse(resp.data);
         const token = data.data; //"Don't touch this shit"
         const jwt = jwt_decode(token);
         const full = JSON.parse(jwt.data.data);
         // const full = data
         // console.log(this.state.id)
-        console.log(full);
+        // console.log(full);
+        AsyncStorage.setItem("students", jwt.data.data)
         this.setState({
           students: full,
           studentsClone: full,
+          loadingData: false,
         });
       })
       .catch(err => {
         this.setState({
           setModalVisible: false,
+          loadingData: false,
         });
         console.log('error response');
         console.log(err);
@@ -237,7 +255,6 @@ export default class MyStudents extends Component {
             </Right>
           </Header>
           {searchBar}
-
           <View
             style={[
               styles.newTopContainer,
@@ -255,6 +272,13 @@ export default class MyStudents extends Component {
               </View>
             </View>
           </View>
+          {/* the loading spinner */}
+          {this.state.loadingData ? (
+            <View style={{flex: 1, alignItems: 'center', justifyContent: 'center'}}>
+              <ActivityIndicator size="large" color="#32899F" />
+            </View>
+          ) : null}
+
           <FlatList
             data={this.state.students}
             keyExtractor={(item, index) => index.toString()}
@@ -280,7 +304,15 @@ export default class MyStudents extends Component {
                           })
                         }
                         style={styles.rowData}>
-                        <Icon name="bookshelf" color={item.item.LivreGratuitElv == "1"?"#81c784":"#444"} size={25} />
+                        <Icon
+                          name="bookshelf"
+                          color={
+                            item.item.LivreGratuitElv == '1'
+                              ? '#81c784'
+                              : '#444'
+                          }
+                          size={25}
+                        />
                       </TouchableOpacity>
                       <Pressable style={styles.rowData}>
                         <Text style={styles.content}>

@@ -16,14 +16,14 @@ class SplashScreen extends Component {
 
   componentDidMount() {
     // this.props.navigation.navigate('Tabs', { navigation: this.props.navigation })
-    this.checkAuth();
+    // this.checkAuth();
     this.connect();
     // app.initializeApp(firebaseConfig);
   }
 
   checkApp = async () => {
     const formData = new FormData();
-    formData.append('appName', 'HommiesApp');
+    formData.append('appName', 'booksAlg');
     const requestOptions = {
       method: 'POST',
       header: {'Content-Type': 'application/json'},
@@ -44,11 +44,9 @@ class SplashScreen extends Component {
         })
         .catch(error => {
           console.log(error);
-          // Alert.alert('يجب الاتصال بالانترنت');
         });
     } catch (error) {
       console.log(error);
-      // Alert.alert('يجب الاتصال بالانترنت');
     }
   };
 
@@ -64,7 +62,13 @@ class SplashScreen extends Component {
       if (!state.isConnected) {
         this.setState({
           connected: (
-            <SafeAreaView style={{backgroundColor: 'red', position: 'absolute', bottom:0, width: '100%'}}>
+            <SafeAreaView
+              style={{
+                backgroundColor: 'red',
+                position: 'absolute',
+                bottom: 0,
+                width: '100%',
+              }}>
               <Text
                 style={{
                   color: '#fff',
@@ -81,7 +85,7 @@ class SplashScreen extends Component {
         });
       } else {
         this.setState({connected: null});
-        // this.checkApp()
+        this.checkApp();
       }
     });
   }

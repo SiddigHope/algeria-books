@@ -29,7 +29,7 @@ const payment = [
     value: '1',
   },
   {
-    label: 'دفع نقدي',
+    label: 'دفع بريدي',
     value: '2',
   },
 ];
@@ -58,6 +58,8 @@ export default class Payment extends Component {
       asyncKey: [],
       studentsList: [],
       disabled: false,
+      email: '',
+      name: '',
     };
   }
 
@@ -66,6 +68,23 @@ export default class Payment extends Component {
     this.setItemsAsArrayOfIds();
     // console.log(defBranch)
   }
+
+  getUser = async () => {
+    const user = await AsyncStorage.getItem('parentInfo');
+    const userId = await AsyncStorage.getItem('parentId');
+    if (user != null) {
+      const userJson = JSON.parse(user);
+      //   console.log(userJson);
+      this.setState({
+        user: userJson,
+        id: userId,
+        email: userId,
+        name: userJson.NomArParent + ' ' + userJson.PrenomArParent,
+      });
+      // console.log(userJson);
+      // console.log(userId);
+    }
+  };
 
   setItemsAsArrayOfIds = async () => {
     let bookCounts = 0;
@@ -124,11 +143,25 @@ export default class Payment extends Component {
     }
   };
 
+  resetCartItems = async student => {
+    const cart = await AsyncStorage.getItem('cart');
+    if (cart != null) {
+      console.log(' inside the cart ');
+      const jsonCart = JSON.parse(cart);
+      const newCart = jsonCart.filter(item => item.stdId != student);
+      // resetting the new cart object
+
+      AsyncStorage.setItem('cart', JSON.stringify(newCart));
+    }
+  };
+
   onPressPay = async type => {
-    // online payment
+    //pay for every student alone
+
     this.setState({
       activityIndicator: true,
     });
+
     // console.log(this.state.studentsList)
     const formData = new FormData();
     formData.append('parentId', String(this.state.user.MatriculeParent));
@@ -149,23 +182,16 @@ export default class Payment extends Component {
       fetch(mainDomain + 'bookOrder.php', requestOptions)
         .then(response => response.json())
         .then(data => {
-          console.log(data);
+          // console.log(data);
           const token = data.data; //"Don't touch this shit"
           const jwt = jwt_decode(token);
           const full = JSON.parse(jwt.data.data);
           if (full.message == 'inserted') {
-            // this.setState({
-            //   showSuccessModal: true,
-            //   activityIndicator: false,
-            // });
             this.state.asyncKey.forEach(element => {
               AsyncStorage.removeItem(element.key);
             });
-            // AsyncStorage.removeItem('cart');
-            // setTimeout(() => {
-            //   this.props.navigation.navigate('MyStudents');
-            // }, 3000);
             this.insertIntoOrder('0');
+            this.resetCartItems(this.state.studentsList[0].MatriculeElv);
           } else {
             this.setState({
               activityIndicator: false,
@@ -190,15 +216,15 @@ export default class Payment extends Component {
   };
 
   completePayment = async type => {
-    // cash payment
-    // console.log('cash')
+    //pay for all students together
+
     this.setState({
       activityIndicator: true,
     });
 
     const students = this.props.route.params.students;
     students.forEach((iterated, index) => {
-      console.log(iterated);
+      // console.log(iterated);
       ////////////////////////////////////////////////////////////////
 
       const formData = new FormData();
@@ -220,7 +246,7 @@ export default class Payment extends Component {
         fetch(mainDomain + 'bookOrder.php', requestOptions)
           .then(response => response.json())
           .then(data => {
-            console.log(data);
+            // console.log(data);
             const token = data.data; //"Don't touch this shit"
             const jwt = jwt_decode(token);
             const full = JSON.parse(jwt.data.data);
@@ -229,14 +255,8 @@ export default class Payment extends Component {
                 AsyncStorage.removeItem(element.key);
               });
               if (index == this.state.studentsList.length - 1) {
-                // this.setState({
-                //   showSuccessModal: true,
-                //   activityIndicator: false,
-                // });
                 AsyncStorage.removeItem('cart');
-                // setTimeout(() => {
-                //   this.props.navigation.navigate('MyStudents');
-                // }, 3000);
+
                 this.insertIntoOrder('1');
               }
             } else {
@@ -282,8 +302,8 @@ export default class Payment extends Component {
       fetch(mainDomain + 'insertIntoOrder.php', requestOptions)
         .then(response => response.json())
         .then(data => {
-          console.log('data');
-          console.log(data);
+          // console.log('data');
+          // console.log(data);
           const token = data.data; //"Don't touch this shit"
           const jwt = jwt_decode(token);
           const full = JSON.parse(jwt.data.data);
@@ -327,22 +347,8 @@ export default class Payment extends Component {
     });
   };
 
-  getUser = async () => {
-    const user = await AsyncStorage.getItem('parentInfo');
-    const userId = await AsyncStorage.getItem('parentId');
-    if (user != null) {
-      const userJson = JSON.parse(user);
-      //   console.log(userJson);
-      this.setState({
-        user: userJson,
-        id: userId,
-      });
-      // console.log(userJson);
-      // console.log(userId);
-    }
-  };
-
   render() {
+    // console.log(this.state.email);
     return (
       <View style={styles.container}>
         <StatusBar backgroundColor="#32899F" />
@@ -384,13 +390,6 @@ export default class Payment extends Component {
               <Text style={[styles.rowDataValue]}>{'المجموع الكلي'}</Text>
             </View>
 
-            {/* <View style={styles.rowData}>
-              <Text style={[styles.rowDataKey, {fontSize: 18}]}>
-                {''}
-              </Text>
-              <Text style={[styles.rowDataValue]}>{''}</Text>
-            </View> */}
-
             <View style={styles.rowData}>
               <Text style={[styles.rowDataKey]}>
                 {this.props.route.params.type != '0' ? 'دفع فردي' : 'دفع جماعي'}
@@ -403,54 +402,44 @@ export default class Payment extends Component {
               keyboardType="default"
               style={styles.textInput}
               editable={false}
-              blurOnSubmit={false}
-              value={
-                this.state.user.length != 0
-                  ? this.state.user.NomArParent + this.state.user.PrenomArParent
-                  : ''
-              }
+              value={this.state.name}
               placeholder={'الاسم كاملا'}
-              onSubmitEditing={() => this.password.focus()}
-              onChangeText={fullname => this.setState({fullname})}
             />
             <TextInput
               textAlign={'32323' == 'Hommies' ? 'left' : 'right'}
               keyboardType="phone-pad"
               editable={false}
               style={styles.textInput}
-              blurOnSubmit={false}
-              value={this.state.user.length != 0 ? this.state.id : ''}
+              value={this.state.email}
               placeholder={'الايميل'}
-              onSubmitEditing={() => this.password.focus()}
-              onChangeText={phone => this.setState({phone})}
             />
             <Text style={styles.rowDataValue}>{'طريقة الدفع'}</Text>
             {this.state.disabled ? (
-                <RadioButtonRN
-                  style={{
-                    flexDirection: 'row',
-                    width: '70%',
-                    alignSelf: 'center',
-                  }}
-                  boxStyle={[styles.boxStyle]}
-                  textStyle={{
-                    marginHorizontal: 3,
-                    fontFamily: 'Tajawal-Regular',
-                  }}
-                  initial={1}
-                  data={free}
-                  icon={<Icon name="check-circle" size={25} color="#32899F" />}
-                />
+              <RadioButtonRN
+                style={{
+                  flexDirection: 'row',
+                  width: '70%',
+                  alignSelf: 'center',
+                }}
+                boxStyle={[styles.boxStyle]}
+                textStyle={{
+                  marginHorizontal: 3,
+                  fontFamily: 'Tajawal-Regular',
+                }}
+                initial={1}
+                data={free}
+                icon={<Icon name="check-circle" size={25} color="#32899F" />}
+              />
             ) : (
               <RadioButtonRN
                 selectedBtn={payment => {
                   if (this.state.disabled) {
+                    // console.log(payment.value);
+                  } else {
                     this.setState({
                       payment: payment.value,
                     });
-                    console.log(payment.value);
-                  } else {
-                    console.log(payment.value);
+                    // console.log(payment.value);
                   }
                 }}
                 style={[{flexDirection: 'row'}]}
@@ -466,7 +455,13 @@ export default class Payment extends Component {
         <Pressable
           onPress={() =>
             this.state.studentsList.length == 1
-              ? this.onPressPay(this.state.disabled?"2":this.state.payment == '1' ? '1' : '0')
+              ? this.onPressPay(
+                  this.state.disabled
+                    ? '2'
+                    : this.state.payment == '1'
+                    ? '1'
+                    : '0',
+                )
               : this.completePayment(this.state.payment == '1' ? '1' : '0')
           }
           style={styles.btn}>
@@ -565,6 +560,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFF',
     borderRadius: 10,
     fontSize: 14,
+    color: 'grey',
     elevation: 1,
     fontFamily: 'Tajawal-Regular',
     marginBottom: 5,
