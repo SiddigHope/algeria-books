@@ -1,5 +1,12 @@
 import React, {Component} from 'react';
-import {Text, StyleSheet, View, FlatList, ActivityIndicator} from 'react-native';
+import {
+  Text,
+  StyleSheet,
+  View,
+  FlatList,
+  ActivityIndicator,
+  ToastAndroid,
+} from 'react-native';
 import {getPermission, mainDomain, openPdf} from '../config/var';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import RNFetchBlob from 'rn-fetch-blob';
@@ -48,6 +55,12 @@ export default class FreeSalesComponent extends Component {
 
   getOrderDetails = item => {
     getPermission();
+
+    const sorryText = 'عذرا لا يمكنك طباعة الوصل بعد عملية الشراء';
+    if (item.receipe > 0) {
+      ToastAndroid.show(sorryText, ToastAndroid.LONG);
+      return;
+    }
 
     this.props.download(true, 0);
     // console.log('sdjnchjbds');
@@ -167,9 +180,9 @@ export default class FreeSalesComponent extends Component {
             {backgroundColor: '#e3e3e3', height: 50},
           ]}>
           <View style={[styles.rowTopContainer]}>
-            <View style={styles.rowTopData}>
+            {/* <View style={styles.rowTopData}>
               <Text style={styles.textTitle}> {'حالة الطلب'} </Text>
-            </View>
+            </View> */}
             <View style={styles.rowTopData}>
               <Text style={styles.textTitle}> {'التاريخ'} </Text>
             </View>

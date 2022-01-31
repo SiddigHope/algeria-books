@@ -86,7 +86,11 @@ class CashSalesComponent extends Component {
 
   getOrderDetails = item => {
     getPermission();
-
+    const sorryText = 'عذرا لا يمكنك طباعة الوصل بعد عملية الشراء';
+    if (item.receipe > 0) {
+      ToastAndroid.show(sorryText, ToastAndroid.LONG);
+      return;
+    }
     this.props.download(true, 0);
 
     // console.log('sdjnchjbds');
@@ -206,9 +210,9 @@ class CashSalesComponent extends Component {
             {backgroundColor: '#e3e3e3', height: 50},
           ]}>
           <View style={[styles.rowTopContainer]}>
-            <View style={styles.rowTopData}>
+            {/* <View style={styles.rowTopData}>
               <Text style={styles.textTitle}> {'حالة الطلب'} </Text>
-            </View>
+            </View> */}
             <View style={styles.rowTopData}>
               <Text style={styles.textTitle}> {'التاريخ'} </Text>
             </View>
@@ -250,7 +254,10 @@ class CashSalesComponent extends Component {
         {this.state.first ? (
           <View style={styles.walkthroughCont}>
             <View style={[styles.firstContainer, {marginBottom: 10}]}></View>
-            <CopilotStep text="يمكنك تحميل الوصل من هذه الايقونة الحمراء" order={1} name="hello">
+            <CopilotStep
+              text="يمكنك تحميل الوصل من هذه الايقونة الحمراء"
+              order={1}
+              name="hello">
               <CopilotText style={styles.firstContainer}>
                 <View style={{height: 25, width: 25}} />
                 {/* <Icon name="file-pdf" size={25} color={'#e80242'} /> */}

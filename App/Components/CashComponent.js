@@ -26,6 +26,15 @@ export default class CashComponent extends Component {
       this.props.item.item.order_id +
       '-postoffice.pdf';
     const exists = await RNFetchBlob.fs.exists(file);
+
+    if (exists && this.props.item.item.receipe > 0) {
+      RNFetchBlob.fs.unlink(file);
+      this.setState({
+        exists: false,
+      });
+      return;
+    }
+
     this.setState({
       exists,
     });
@@ -47,13 +56,13 @@ export default class CashComponent extends Component {
       <>
         <View style={[styles.newContainer, {backgroundColor}]}>
           <View style={[styles.rowContainer]}>
-            <View style={styles.rowData}>
+            {/* <View style={styles.rowData}>
               {this.props.item.item.receipe != '0' ? (
                 <Icon name="check-bold" color="#81c784" size={25} />
               ) : (
                 <Icon name="close-thick" color="#ef5350" size={25} />
               )}
-            </View>
+            </View> */}
             <View style={styles.rowData}>
               <Text style={styles.content}>
                 {' '}
@@ -68,7 +77,7 @@ export default class CashComponent extends Component {
                 onPress={() => this.props.checkFile(this.props.item.item)}>
                 {this.props.first && this.props.item.index == 0 ? (
                   <Icon name="file-pdf" size={25} color={'#e80242'} />
-                ):this.props.first && this.props.item.index == 1 ? (
+                ) : this.props.first && this.props.item.index == 1 ? (
                   <Icon name="file-pdf" size={25} color={'#81c784'} />
                 ) : (
                   <Icon

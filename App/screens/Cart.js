@@ -171,6 +171,10 @@ export default class MyStudents extends Component {
           activityIndicator: false,
         });
       }
+    }else{
+      this.setState({
+        activityIndicator: false,
+      })
     }
   };
 

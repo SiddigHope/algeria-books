@@ -5,6 +5,7 @@ import {
   View,
   FlatList,
   ActivityIndicator,
+  ToastAndroid,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import {checkFile, getPermission, mainDomain, openPdf} from '../config/var';
@@ -56,7 +57,13 @@ export default class OnlineSalesComponent extends Component {
 
   getOrderDetails = item => {
     getPermission();
-    // console.log('sdjnchjbds');
+    const sorryText = 'عذرا لا يمكنك طباعة الوصل بعد عملية الشراء';
+    if (item.receipe > 0) {
+      ToastAndroid.show(sorryText, ToastAndroid.LONG);
+      return;
+    }
+    // this is to set downloading sign for the user
+    this.props.download(true, 0);
     // function loop through all the students and return the student who belongs to this particular order
     const filtering = student => student.MatriculeElv == item.eleve;
 
@@ -174,9 +181,9 @@ export default class OnlineSalesComponent extends Component {
             {backgroundColor: '#e3e3e3', height: 50},
           ]}>
           <View style={[styles.rowTopContainer]}>
-            <View style={styles.rowTopData}>
+            {/* <View style={styles.rowTopData}>
               <Text style={styles.textTitle}> {'حالة الطلب'} </Text>
-            </View>
+            </View> */}
             <View style={styles.rowTopData}>
               <Text style={styles.textTitle}> {'التاريخ'} </Text>
             </View>

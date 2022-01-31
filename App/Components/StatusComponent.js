@@ -5,7 +5,7 @@ import {checkFile, getPermission, mainDomain, openPdf} from '../config/var';
 import RNFetchBlob from 'rn-fetch-blob';
 import {now} from 'moment';
 
-export default class FreeComponent extends Component {
+export default class StatusComponent extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -13,72 +13,35 @@ export default class FreeComponent extends Component {
     };
   }
 
-  componentDidMount() {
-    this.checkFile();
-  }
-
-  checkFile = async () => {
-    getPermission();
-    const file =
-      '/storage/emulated/0/receipts/order-' +
-      this.props.item.item.order_id +
-      '-free-books.pdf';
-    const exists = await RNFetchBlob.fs.exists(file);
-
-    if (exists && this.props.item.item.receipe > 0) {
-      RNFetchBlob.fs.unlink(file);
-      this.setState({
-        exists: false,
-      });
-      return;
-    }
-
-    this.setState({
-      exists,
-    });
-    // console.log(exists)
-  };
-
   render() {
-    // console.log(item.index)
-    const item = this.props.item;
     let backgroundColor = '#FFF';
     let elevation = 3;
-    if (item.index % 2 == 1) {
+    if (this.props.item.index % 2 == 1) {
       backgroundColor = '#FFF';
       elevation = 0;
-    }
-    if (this.props.check) {
-      this.checkFile();
     }
     return (
       <>
         <View style={[styles.newContainer, {backgroundColor}]}>
           <View style={[styles.rowContainer]}>
-            {/* <View style={styles.rowData}>
-              {this.props.item.item.receipe != '0' ? (
+            <View style={styles.rowData}>
+              {this.props.item.item.status != '0' ? (
                 <Icon name="check-bold" color="#81c784" size={25} />
               ) : (
                 <Icon name="close-thick" color="#ef5350" size={25} />
               )}
-            </View> */}
+            </View>
             <View style={styles.rowData}>
               <Text style={styles.content}>
                 {' '}
-                {item.item.date.slice(0, 10)}{' '}
+                {this.props.item.item.date.slice(0, 10)}{' '}
               </Text>
             </View>
             <View style={styles.rowData}>
-              <Text style={styles.content}> {item.item.price} </Text>
-            </View>
-            <View style={styles.rowData}>
-              <TouchableOpacity onPress={() => this.props.checkFile(item.item)}>
-                <Icon
-                  name="file-pdf"
-                  size={25}
-                  color={this.state.exists ? '#81c784' : '#e80242'}
-                />
-              </TouchableOpacity>
+              <Text style={styles.content}>
+                {' '}
+                {this.props.item.item.total_price}{' '}
+              </Text>
             </View>
           </View>
         </View>

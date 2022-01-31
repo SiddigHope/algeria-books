@@ -143,11 +143,25 @@ export default class Payment extends Component {
     }
   };
 
+  resetCartItems = async student => {
+    const cart = await AsyncStorage.getItem('cart');
+    if (cart != null) {
+      console.log(' inside the cart ');
+      const jsonCart = JSON.parse(cart);
+      const newCart = jsonCart.filter(item => item.stdId != student);
+      // resetting the new cart object
+
+      AsyncStorage.setItem('cart', JSON.stringify(newCart));
+    }
+  };
+
   onPressPay = async type => {
-    // online payment
+    //pay for every student alone
+
     this.setState({
       activityIndicator: true,
     });
+
     // console.log(this.state.studentsList)
     const formData = new FormData();
     formData.append('parentId', String(this.state.user.MatriculeParent));
@@ -173,18 +187,11 @@ export default class Payment extends Component {
           const jwt = jwt_decode(token);
           const full = JSON.parse(jwt.data.data);
           if (full.message == 'inserted') {
-            // this.setState({
-            //   showSuccessModal: true,
-            //   activityIndicator: false,
-            // });
             this.state.asyncKey.forEach(element => {
               AsyncStorage.removeItem(element.key);
             });
-            // AsyncStorage.removeItem('cart');
-            // setTimeout(() => {
-            //   this.props.navigation.navigate('MyStudents');
-            // }, 3000);
             this.insertIntoOrder('0');
+            this.resetCartItems(this.state.studentsList[0].MatriculeElv);
           } else {
             this.setState({
               activityIndicator: false,
@@ -209,8 +216,8 @@ export default class Payment extends Component {
   };
 
   completePayment = async type => {
-    // cash payment
-    // console.log('cash')
+    //pay for all students together
+
     this.setState({
       activityIndicator: true,
     });
@@ -248,14 +255,8 @@ export default class Payment extends Component {
                 AsyncStorage.removeItem(element.key);
               });
               if (index == this.state.studentsList.length - 1) {
-                // this.setState({
-                //   showSuccessModal: true,
-                //   activityIndicator: false,
-                // });
                 AsyncStorage.removeItem('cart');
-                // setTimeout(() => {
-                //   this.props.navigation.navigate('MyStudents');
-                // }, 3000);
+
                 this.insertIntoOrder('1');
               }
             } else {
@@ -559,7 +560,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFF',
     borderRadius: 10,
     fontSize: 14,
-    color:'grey',
+    color: 'grey',
     elevation: 1,
     fontFamily: 'Tajawal-Regular',
     marginBottom: 5,

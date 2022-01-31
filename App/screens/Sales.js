@@ -17,7 +17,6 @@ import SideBar from './../config/SideBar';
 import OnlineSalesComponent from '../Components/OnlineSalesComponent';
 import CashSalesComponent from '../Components/CashSalesComponent';
 import FreeSalesComponent from '../Components/FreeSalesComponent';
-import {TouchableOpacity} from 'react-native-gesture-handler';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
 const {width, height} = Dimensions.get('window');

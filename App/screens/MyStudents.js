@@ -42,6 +42,7 @@ export default class MyStudents extends Component {
   }
 
   componentDidMount() {
+    // AsyncStorage.clear()
     this.checkUser();
     // this.getStudents();
     const navigation = this.props.navigation;
