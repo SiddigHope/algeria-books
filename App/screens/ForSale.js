@@ -65,7 +65,7 @@ class ForSale extends Component {
     // console.log(student);
     RNFetchBlob.fetch(
       'POST',
-      mainDomain2 + 'getSoldBooks.php',
+      mainDomain + 'getSoldBooks.php',
       {
         // Authorization: "Bearer access-token",
         // otherHeader: "foo",

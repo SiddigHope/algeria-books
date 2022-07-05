@@ -35,16 +35,16 @@ export default class Login extends PureComponent {
       userData: '',
       connected: true,
       imei: '',
-      // id: '',
-      id: 'abdes2502@gmail.com',
+      id: '',
+      // id: 'abdes2502@gmail.com',
       setModalVisible: false,
       user: false,
       prev: '',
       userDist: '',
       biometryType: null,
       ActivityIndicator: false,
-      // password: '',
-      password: '123456',
+      password: '',
+      // password: '123456',
       OsVer: '',
     };
   }
@@ -184,10 +184,10 @@ export default class Login extends PureComponent {
         )
           .then(resp => {
             // console.log('*************************');
-            console.log(resp.data);
+            // console.log(resp.data);
             const data = JSON.parse(resp.data);
             // console.log('*************************\\\\\\\\\\\\\\');
-            console.log('works her');
+            // console.log('works here');
             const token = data.data; //"Don't touch this shit"
             const jwt = jwt_decode(token);
             const full = JSON.parse(jwt.data.data);
