@@ -1,4 +1,4 @@
-import React, {Component} from 'react';
+import React, { Component } from 'react';
 import {
   Text,
   StyleSheet,
@@ -11,13 +11,13 @@ import {
   Dimensions,
 } from 'react-native';
 import RNFetchBlob from 'rn-fetch-blob';
-import {getPermission, mainDomain, openPdf} from '../config/var';
+import { getPermission, mainDomain2, openPdf } from '../config/var';
 import CashComponent from './CashComponent';
-import {data} from '../config/data';
-import {copilot, walkthroughable, CopilotStep} from 'react-native-copilot';
+import { data } from '../config/data';
+import { copilot, walkthroughable, CopilotStep } from 'react-native-copilot';
 import AsyncStorage from '@react-native-community/async-storage';
 
-const {width, height} = Dimensions.get('window');
+const { width, height } = Dimensions.get('window');
 
 const CopilotText = walkthroughable(View);
 
@@ -64,7 +64,7 @@ class CashSalesComponent extends Component {
   separator() {
     return (
       <View
-        style={{height: 1, marginVertical: 5, backgroundColor: '#32899F'}}
+        style={{ height: 1, marginVertical: 5, backgroundColor: '#32899F' }}
       />
     );
   }
@@ -106,7 +106,7 @@ class CashSalesComponent extends Component {
     const mapping = book => book.book_id;
     const bookIds = book_list.map(mapping);
 
-    const {dirs} = RNFetchBlob.fs;
+    const { dirs } = RNFetchBlob.fs;
     // console.log(dirs.DownloadDir)
     const downloadFileName = 'order-' + item.order_id + '-postoffice.pdf';
 
@@ -115,36 +115,36 @@ class CashSalesComponent extends Component {
     try {
       RNFetchBlob.fetch(
         'POST',
-        mainDomain + 'getPdfInfo.php',
+        mainDomain2 + 'getPdfInfo.php',
         {
           'Cache-Control': 'no-store',
         },
         [
           // to send data
-          {name: 'parentId', data: String(this.props.parent.MatriculeParent)},
+          { name: 'parentId', data: String(this.props.parent.MatriculeParent) },
           {
             name: 'parentName',
             data: String(
               this.props.parent.NomArParent +
-                ' ' +
-                this.props.parent.PrenomArParent,
+              ' ' +
+              this.props.parent.PrenomArParent,
             ),
           },
           {
             name: 'parentPhone',
             data: String('0' + this.props.parent.TelMobileTutr),
           },
-          {name: 'order_id', data: String(item.order_id)},
+          { name: 'order_id', data: String(item.order_id) },
           {
             name: 'studentName',
             data: String(student[0].NomArElv + ' ' + student[0].PrenomArElv),
           },
-          {name: 'divisionId', data: String(student[0].FkCdDivisionActl)},
-          {name: 'studentId', data: String(student[0].MatriculeElv)},
-          {name: 'division', data: String(student[0].division)},
-          {name: 'institution', data: String(student[0].institution)},
-          {name: 'books', data: String(bookIds)},
-          {name: 'pdfType', data: String('CASH')},
+          { name: 'divisionId', data: String(student[0].FkCdDivisionActl) },
+          { name: 'studentId', data: String(student[0].MatriculeElv) },
+          { name: 'division', data: String(student[0].division) },
+          { name: 'institution', data: String(student[0].institution) },
+          { name: 'books', data: String(bookIds) },
+          { name: 'pdfType', data: String('CASH') },
         ],
       )
         .then(async resp => {
@@ -207,7 +207,7 @@ class CashSalesComponent extends Component {
         <View
           style={[
             styles.newTopContainer,
-            {backgroundColor: '#e3e3e3', height: 50},
+            { backgroundColor: '#e3e3e3', height: 50 },
           ]}>
           <View style={[styles.rowTopContainer]}>
             {/* <View style={styles.rowTopData}>
@@ -226,7 +226,7 @@ class CashSalesComponent extends Component {
         </View>
         {this.props.loading ? (
           <View
-            style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
+            style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
             <ActivityIndicator color="rgba(50,137,159,1)" size="large" />
           </View>
         ) : (
@@ -253,13 +253,13 @@ class CashSalesComponent extends Component {
         )}
         {this.state.first ? (
           <View style={styles.walkthroughCont}>
-            <View style={[styles.firstContainer, {marginBottom: 10}]}></View>
+            <View style={[styles.firstContainer, { marginBottom: 10 }]}></View>
             <CopilotStep
               text="يمكنك تحميل الوصل من هذه الايقونة الحمراء"
               order={1}
               name="hello">
               <CopilotText style={styles.firstContainer}>
-                <View style={{height: 25, width: 25}} />
+                <View style={{ height: 25, width: 25 }} />
                 {/* <Icon name="file-pdf" size={25} color={'#e80242'} /> */}
               </CopilotText>
             </CopilotStep>
@@ -271,7 +271,7 @@ class CashSalesComponent extends Component {
               order={2}
               name="icon2">
               <CopilotText style={styles.secondContainer}>
-                <View style={{height: 25, width: 25}} />
+                <View style={{ height: 25, width: 25 }} />
                 {/* <Icon name="file-pdf" size={25} color={'#81c784'} /> */}
               </CopilotText>
             </CopilotStep>

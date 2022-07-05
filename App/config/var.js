@@ -1,15 +1,44 @@
-import {PermissionsAndroid, Platform, ToastAndroid} from 'react-native';
+import { PermissionsAndroid, Platform, ToastAndroid } from 'react-native';
 import RNFetchBlob from 'rn-fetch-blob';
 
 // export const mainDomain = 'http://192.168.43.148/server/';
 
-// export const mainDomain = 'http://educjijel18.com/server/';
-// export const assetsDomain = 'http://educjijel18.com/';
-// export const newsAssetsDomain = 'http://educjijel18.com/news_image/';
+export const mainDomain = 'https://educjijel18.com/api1/';
+export const assetsDomain = 'https://educjijel18.com/';
+export const newsAssetsDomain = 'https://educjijel18.com/news_image/';
 
-export const mainDomain = 'http://41.201.0.26/abdessalam/server/';
-export const assetsDomain = 'http://41.201.0.26/abdessalam/';
-export const newsAssetsDomain = 'http://41.201.0.26/abdessalam/news_image/';
+/* *** ***** **** **** ** this is for the second server that contains information about students, books and parents ** *** **** *** **** ****  */
+
+export const mainDomain2 = 'https://educjijel18.com/api2/';
+export const assetsDomain2 = 'https://educjijel18.com/';
+export const newsAssetsDomain2 = 'https://educjijel18.com/news_image/';
+
+/* 
+*************
+
+  mainDomain variable contains the following endpoints
+
+    -- getSoldBooks
+    -- bookOrder
+    -- getOrdersStatus
+    -- insertIntoOrder
+    -- getOrders
+
+  mainDomain2 variable contains the following endpoints
+
+    -- getParentData
+    -- insertParentImei
+    -- getMyChildren
+    -- getStudentBooks
+    -- getPdfInfo
+
+*************
+*/
+
+
+// export const mainDomain = 'http://41.201.0.26/abdessalam/server/';
+// export const assetsDomain = 'http://41.201.0.26/abdessalam/';
+// export const newsAssetsDomain = 'http://41.201.0.26/abdessalam/news_image/';
 
 export const getPermission = async file => {
   if (Platform.OS == 'android') {

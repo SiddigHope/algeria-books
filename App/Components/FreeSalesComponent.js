@@ -7,7 +7,7 @@ import {
   ActivityIndicator,
   ToastAndroid,
 } from 'react-native';
-import {getPermission, mainDomain, openPdf} from '../config/var';
+import {getPermission, mainDomain2, openPdf} from '../config/var';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import RNFetchBlob from 'rn-fetch-blob';
 import {now} from 'moment';
@@ -85,7 +85,7 @@ export default class FreeSalesComponent extends Component {
     try {
       RNFetchBlob.fetch(
         'POST',
-        mainDomain + 'getPdfInfo.php',
+        mainDomain2 + 'getPdfInfo.php',
         {
           'Cache-Control': 'no-store',
         },

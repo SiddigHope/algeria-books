@@ -15,7 +15,7 @@ import Icon1 from 'react-native-vector-icons/MaterialIcons';
 import RNFetchBlob from 'rn-fetch-blob';
 import AsyncStorage from '@react-native-community/async-storage';
 import jwt_decode from 'jwt-decode';
-import {mainDomain, newsAssetsDomain} from '../config/var';
+import {mainDomain2, newsAssetsDomain} from '../config/var';
 
 const Screen = Dimensions.get('window');
 const {width, height} = Dimensions.get('window');
@@ -47,7 +47,7 @@ export default class Protocol extends PureComponent {
       const userId = await AsyncStorage.getItem('teacherId');
       RNFetchBlob.fetch(
         'POST',
-        mainDomain + 'getBooksProtocols.php',
+        mainDomain2 + 'getBooksProtocols.php',
         {
           // Authorization: "Bearer access-token",
           // otherHeader: "foo",

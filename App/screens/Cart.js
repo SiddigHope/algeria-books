@@ -17,7 +17,7 @@ import RNFetchBlob from 'rn-fetch-blob';
 import jwt_decode from 'jwt-decode';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import _ from 'lodash';
-import {mainDomain} from '../config/var';
+import {mainDomain2} from '../config/var';
 import SideBar from '../config/SideBar';
 
 const {width, height} = Dimensions.get('window');
@@ -58,7 +58,7 @@ export default class MyStudents extends Component {
     // const userDist = await AsyncStorage.getItem('teacherDist');
     RNFetchBlob.fetch(
       'POST',
-      mainDomain + 'getMyChildren.php',
+      mainDomain2 + 'getMyChildren.php',
       {
         'Content-Type': 'application/json',
       },

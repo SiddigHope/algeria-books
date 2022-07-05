@@ -19,7 +19,7 @@ import RNFetchBlob from 'rn-fetch-blob';
 import jwt_decode from 'jwt-decode';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import _ from 'lodash';
-import {mainDomain} from '../config/var';
+import {mainDomain2} from '../config/var';
 import {Body, Header, Left, Right} from 'native-base';
 import SideBar from './../config/SideBar';
 
@@ -116,7 +116,7 @@ export default class MyStudents extends Component {
     // const userDist = await AsyncStorage.getItem('teacherDist');
     RNFetchBlob.fetch(
       'POST',
-      mainDomain + 'getMyChildren.php',
+      mainDomain2 + 'getMyChildren.php',
       {
         // Authorization: "Bearer access-token",
         // otherHeader: "foo",

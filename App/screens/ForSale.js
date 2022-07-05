@@ -18,7 +18,7 @@ import AsyncStorage from '@react-native-community/async-storage';
 import RNFetchBlob from 'rn-fetch-blob';
 import jwt_decode from 'jwt-decode';
 import _ from 'lodash';
-import {assetsDomain, mainDomain} from '../config/var';
+import {assetsDomain, mainDomain2, mainDomain} from '../config/var';
 const {width, height} = Dimensions.get('window');
 // import {download} from '../config/service';
 
@@ -65,7 +65,7 @@ class ForSale extends Component {
     // console.log(student);
     RNFetchBlob.fetch(
       'POST',
-      mainDomain + 'getSoldBooks.php',
+      mainDomain2 + 'getSoldBooks.php',
       {
         // Authorization: "Bearer access-token",
         // otherHeader: "foo",

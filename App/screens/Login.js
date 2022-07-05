@@ -1,4 +1,4 @@
-import React, {PureComponent} from 'react';
+import React, { PureComponent } from 'react';
 import {
   PermissionsAndroid,
   Alert,
@@ -22,11 +22,11 @@ import RNFetchBlob from 'rn-fetch-blob';
 import NetInfo from '@react-native-community/netinfo';
 import jwt_decode from 'jwt-decode';
 import DeviceInfo from 'react-native-device-info';
-import {CustomTabs} from 'react-native-custom-tabs';
-import {mainDomain} from '../config/var';
-import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
+import { CustomTabs } from 'react-native-custom-tabs';
+import { mainDomain2 } from '../config/var';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 
-const {width, height} = Dimensions.get('window');
+const { width, height } = Dimensions.get('window');
 
 export default class Login extends PureComponent {
   constructor(props) {
@@ -35,16 +35,16 @@ export default class Login extends PureComponent {
       userData: '',
       connected: true,
       imei: '',
-      id: '',
-      // id: 'abdes2502@gmail.com',
+      // id: '',
+      id: 'abdes2502@gmail.com',
       setModalVisible: false,
       user: false,
       prev: '',
       userDist: '',
       biometryType: null,
       ActivityIndicator: false,
-      password: '',
-      // password: '123456',
+      // password: '',
+      password: '123456',
       OsVer: '',
     };
   }
@@ -56,7 +56,7 @@ export default class Login extends PureComponent {
           connected: false,
         });
       } else {
-        this.setState({connected: true});
+        this.setState({ connected: true });
       }
     });
   }
@@ -78,8 +78,8 @@ export default class Login extends PureComponent {
         Alert.alert(
           'تنبيه',
           'يجب السماح للتطبيق بالوصول لبيانات الهاتف',
-          [{text: 'حسناً', onPress: () => BackHandler.exitApp()}],
-          {cancelable: false},
+          [{ text: 'حسناً', onPress: () => BackHandler.exitApp() }],
+          { cancelable: false },
         );
       }
     }
@@ -113,9 +113,9 @@ export default class Login extends PureComponent {
             onPress: () => console.log('Cancel Pressed'),
             style: 'cancel',
           },
-          {text: 'نعم', onPress: () => BackHandler.exitApp()},
+          { text: 'نعم', onPress: () => BackHandler.exitApp() },
         ],
-        {cancelable: false},
+        { cancelable: false },
       );
       return true;
     }
@@ -131,7 +131,7 @@ export default class Login extends PureComponent {
       const userJson = JSON.parse(user);
       // console.log(userJson);
       this.setState({
-        user: true,
+        user: false,
         id: userId,
         password: userJson.password,
         ActivityIndicator: false,
@@ -162,28 +162,32 @@ export default class Login extends PureComponent {
   };
 
   signup = async () => {
+    // console.log("sent data");
+    // console.log(this.state.id);
+    // console.log(this.state.password);
     if (this.state.id != '' && this.state.password != '') {
       try {
         RNFetchBlob.fetch(
           'POST',
-          mainDomain + 'getParentData.php',
+          mainDomain2 + 'getParentData.php',
           {
             // Authorization: "Bearer access-token",
             // otherHeader: "foo",
-            'Content-Type': 'multipart/form-data',
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
           },
           [
             // to send data
-            {name: 'parentId', data: this.state.id},
-            {name: 'password', data: this.state.password},
+            { name: 'parentId', data: String(this.state.id) },
+            { name: 'password', data: String(this.state.password) },
           ],
         )
           .then(resp => {
             // console.log('*************************');
-            // console.log(resp.data);
+            console.log(resp.data);
             const data = JSON.parse(resp.data);
             // console.log('*************************\\\\\\\\\\\\\\');
-            // console.log('works here');
+            console.log('works her');
             const token = data.data; //"Don't touch this shit"
             const jwt = jwt_decode(token);
             const full = JSON.parse(jwt.data.data);
@@ -253,7 +257,7 @@ export default class Login extends PureComponent {
       if (this.state.prev == '' || this.state.prev == id) {
         RNFetchBlob.fetch(
           'POST',
-          mainDomain + 'insertParentImei.php',
+          mainDomain2 + 'insertParentImei.php',
           {
             // Authorization: "Bearer access-token",
             // otherHeader: "foo",
@@ -261,8 +265,8 @@ export default class Login extends PureComponent {
           },
           [
             // to send data
-            {name: 'imei', data: String(id)},
-            {name: 'parentId', data: this.state.id.toString()},
+            { name: 'imei', data: String(id) },
+            { name: 'parentId', data: this.state.id.toString() },
           ],
         )
           .then(res => {
@@ -342,9 +346,9 @@ export default class Login extends PureComponent {
         style={styles.container}>
         <Modal
           transparent={true}
-          onBackdropPress={() => this.setState({setModalVisible: false})}
-          onSwipeComplete={() => this.setState({setModalVisible: false})}
-          onRequestClose={() => this.setState({setModalVisible: false})}
+          onBackdropPress={() => this.setState({ setModalVisible: false })}
+          onSwipeComplete={() => this.setState({ setModalVisible: false })}
+          onRequestClose={() => this.setState({ setModalVisible: false })}
           visible={this.state.setModalVisible}
           animationType="fade">
           <View style={styles.modalContainer}>
@@ -387,7 +391,7 @@ export default class Login extends PureComponent {
                 </View>
               </View>
 
-              <View style={[styles.rowContainer1, {marginTop: 20}]}>
+              <View style={[styles.rowContainer1, { marginTop: 20 }]}>
                 <TouchableOpacity
                   onPress={() => this.cancelSignin()}
                   style={[
@@ -451,7 +455,7 @@ export default class Login extends PureComponent {
 
         <View style={styles.container}>
           <StatusBar backgroundColor="#32899F" />
-          <View style={{width: '100%', height: '30%'}}>
+          <View style={{ width: '100%', height: '30%' }}>
             <Image
               source={require('./../Assets/bookSplashTop.png')}
               style={styles.loginBanner}
@@ -482,7 +486,7 @@ export default class Login extends PureComponent {
                     }}
                     placeholderTextColor="#32899F"
                     onSubmitEditing={() => this.password.focus()}
-                    onChangeText={text => this.setState({id: text})}
+                    onChangeText={text => this.setState({ id: text })}
                   />
                 </View>
                 <View style={styles.inputView}>
@@ -494,13 +498,13 @@ export default class Login extends PureComponent {
                     value={this.state.password}
                     placeholder="كلمة المرور"
                     placeholderTextColor="#32899F"
-                    onChangeText={text => this.setState({password: text})}
+                    onChangeText={text => this.setState({ password: text })}
                   />
                 </View>
               </>
             ) : null}
             <TouchableOpacity
-              style={[styles.loginBtn, this.state.user ? {marginTop: 70} : {}]}
+              style={[styles.loginBtn, this.state.user ? { marginTop: 70 } : {}]}
               onPress={() => {
                 this.getPermision();
               }}>

@@ -8,7 +8,7 @@ import {
   ToastAndroid,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import {checkFile, getPermission, mainDomain, openPdf} from '../config/var';
+import {checkFile, getPermission, mainDomain2, openPdf} from '../config/var';
 import RNFetchBlob from 'rn-fetch-blob';
 import {now} from 'moment';
 import OnlineComponent from './OnlineComponent';
@@ -86,7 +86,7 @@ export default class OnlineSalesComponent extends Component {
     try {
       RNFetchBlob.fetch(
         'POST',
-        mainDomain + 'getPdfInfo.php',
+        mainDomain2 + 'getPdfInfo.php',
         {
           'Cache-Control': 'no-store',
         },

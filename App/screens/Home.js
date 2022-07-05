@@ -1,4 +1,4 @@
-import React, {Component} from 'react';
+import React, { Component } from 'react';
 import {
   StatusBar,
   Alert,
@@ -28,8 +28,11 @@ import Feeds from './../Components/Feeds';
 import Protocol from './../Components/Protocol';
 import NetInfo from '@react-native-community/netinfo';
 import _ from 'lodash';
+import { mainDomain } from '../config/var';
+import AsyncStorage from '@react-native-community/async-storage';
+import axios from 'axios';
 
-const {width, height} = Dimensions.get('window');
+const { width, height } = Dimensions.get('window');
 
 console.disableYellowBox = true;
 
@@ -45,8 +48,44 @@ class Home extends Component {
   }
 
   componentDidMount() {
+    this.tryOnlinePayment()
     this.connect();
     BackHandler.addEventListener('hardwareBackPress', this.handleBackPress);
+  }
+
+  tryOnlinePayment = async () => {
+    const userString = await AsyncStorage.getItem('parentInfo');
+    const user = JSON.parse(userString);
+
+    const orderNumber = "21" + "2030" + user.MatriculeParent + Date.now();
+
+    const data = {
+      "orderNumber": orderNumber,
+      "returnUrl": mainDomain + "bookOrder.php",
+      "currency": "012",
+      "language": "ar"
+    }
+    try {
+      const options = {
+        method: "POST",
+        url: "https://webmerchant.poste.dz/payment/rest/register.do",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        data,
+      };
+
+      const request = await axios(options)
+        .then((response) => response)
+        .catch((error) => console.log("error axios:",error));
+      console.log(request)
+      return
+      return request.success ? request.data : false;
+    } catch (error) {
+      console.log("error try",error);
+      return false;
+    }
   }
 
   componentWillUnmount() {
@@ -64,9 +103,9 @@ class Home extends Component {
             onPress: () => console.log('Cancel Pressed'),
             style: 'cancel',
           },
-          {text: 'نعم', onPress: () => BackHandler.exitApp()},
+          { text: 'نعم', onPress: () => BackHandler.exitApp() },
         ],
-        {cancelable: false},
+        { cancelable: false },
       );
       return true;
     }
@@ -91,7 +130,7 @@ class Home extends Component {
       if (!state.isConnected) {
         this.setState({
           connected: (
-            <SafeAreaView style={{backgroundColor: 'red'}}>
+            <SafeAreaView style={{ backgroundColor: 'red' }}>
               <Text
                 style={{
                   color: '#fff',
@@ -107,23 +146,23 @@ class Home extends Component {
           ),
         });
       } else {
-        this.setState({connected: null});
+        this.setState({ connected: null });
       }
     });
   }
 
   container() {
     return (
-      <Container style={{backgroundColor: '#FFF'}}>
+      <Container style={{ backgroundColor: '#FFF' }}>
         <StatusBar backgroundColor="#32899F" />
         <Header
-          style={{backgroundColor: '#32899F'}}
+          style={{ backgroundColor: '#32899F' }}
           androidStatusBarColor="#32899F">
-          <Left style={{flexDirection: 'row', flex: 1, marginLeft: 15}}></Left>
+          <Left style={{ flexDirection: 'row', flex: 1, marginLeft: 15 }}></Left>
           <Body>
             <Text style={styles.title}>{'الرئيسية'}</Text>
           </Body>
-          <Right style={{marginRights: 15}}>
+          <Right style={{ marginRights: 15 }}>
             <TouchableOpacity
               onPress={() => this.props.navigation.navigate('MyStudents')}
               style={{
@@ -140,12 +179,12 @@ class Home extends Component {
         <Tabs
           renderTabBar={this.renderTabBar}
           initialPage={1}
-          tabBarUnderlineStyle={{height: 2, backgroundColor: '#fff'}}
+          tabBarUnderlineStyle={{ height: 2, backgroundColor: '#fff' }}
           tabBarPosition="overlayTop">
           <Tab
             tabStyle={styles.tabStyle}
             textStyle={styles.text}
-            activeTextStyle={{color: '#FFF', fontFamily: 'Tajawal-Regular'}}
+            activeTextStyle={{ color: '#FFF', fontFamily: 'Tajawal-Regular' }}
             activeTabStyle={styles.active}
             heading="الأخبار">
             <Feeds navigation={this.props.navigation} />
@@ -153,9 +192,9 @@ class Home extends Component {
           <Tab
             tabStyle={styles.tabStyle}
             textStyle={styles.text}
-            activeTextStyle={{color: '#FFF', fontFamily: 'Tajawal-Regular'}}
+            activeTextStyle={{ color: '#FFF', fontFamily: 'Tajawal-Regular' }}
             activeTabStyle={styles.active}
-            heading="البرتكول الصحي">
+            heading="كتب شبه مدرسية">
             <Protocol navigation={this.props.navigation} />
           </Tab>
         </Tabs>
