@@ -19,11 +19,12 @@ import {
 import AsyncStorage from '@react-native-community/async-storage';
 import IMEI from 'react-native-imei';
 import RNFetchBlob from 'rn-fetch-blob';
+import messaging from '@react-native-firebase/messaging';
 import NetInfo from '@react-native-community/netinfo';
 import jwt_decode from 'jwt-decode';
 import DeviceInfo from 'react-native-device-info';
 import { CustomTabs } from 'react-native-custom-tabs';
-import { mainDomain2 } from '../config/var';
+import { mainDomain, mainDomain2 } from '../config/var';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 
 const { width, height } = Dimensions.get('window');
@@ -46,6 +47,7 @@ export default class Login extends PureComponent {
       password: '',
       // password: '123456',
       OsVer: '',
+      insertImei: false
     };
   }
 
@@ -131,7 +133,7 @@ export default class Login extends PureComponent {
       const userJson = JSON.parse(user);
       // console.log(userJson);
       this.setState({
-        user: false,
+        user: true,
         id: userId,
         password: userJson.password,
         ActivityIndicator: false,
@@ -143,6 +145,7 @@ export default class Login extends PureComponent {
     this.setState({
       user: true,
     });
+    this.insertToken()
     this.props.navigation.navigate('MyStudents', {
       navigation: this.props.navigation,
     });
@@ -160,6 +163,50 @@ export default class Login extends PureComponent {
     //   Alert.alert('لم تتم العملية', 'تأكد من الاتصال بالانترنت و حاول مجددا');
     // }
   };
+
+  insertToken = async () => {
+    let token = ''
+    try {
+      token = await messaging().getToken();
+      console.log(token)
+    } catch (error) {
+      console.log(error)
+    }
+    if (token) {
+      try {
+        RNFetchBlob.fetch(
+          'POST',
+          mainDomain + 'tokenRegistration.php',
+          {
+            // Authorization: "Bearer access-token",
+            // otherHeader: "foo",
+            'Content-Type': 'multipart/form-data',
+          },
+          [
+            // to send data
+            { name: 'token', data: String(token) },
+            { name: 'parentId', data: String(this.state.userData.MatriculeParent) },
+            { name: 'f_name', data: String(this.state.userData.NomArParent) },
+            { name: 's_name', data: String(this.state.userData.PrenomArParent) },
+          ],
+        )
+          .then(res => {
+            console.log("response: token registration endpoint")
+            console.log(res.data)
+          })
+          .catch(err => {
+            this.setState({
+              ActivityIndicator: false,
+            });
+            console.log("error response: token registration endpoint")
+            console.log(err);
+          });
+      } catch (error) {
+        console.log("inserting_token_error :", error);
+      }
+    }
+
+  }
 
   signup = async () => {
     // console.log("sent data");
@@ -195,17 +242,15 @@ export default class Login extends PureComponent {
             // console.log(full.serial_parent);
             if (this.state.user) {
               this.setState({
-                userData: full,
-                prev: full.serial_parent,
+                userData: full
               });
-              this.confirmSignin();
+              this.checkImei()
             } else {
               if (full.status == '1') {
                 this.setState({
                   // userData: JSON.parse(full),
                   userData: full,
                   setModalVisible: true,
-                  prev: full.serial_parent,
                   ActivityIndicator: false,
                 });
               } else {
@@ -237,6 +282,60 @@ export default class Login extends PureComponent {
     }
   };
 
+  checkImei = async () => {
+    console.log("checking user registered imei...");
+    try {
+      RNFetchBlob.fetch(
+        'POST',
+        mainDomain + 'getImei.php',
+        {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+        },
+        [
+          // to send data
+          { name: 'parentId', data: String(this.state.userData.MatriculeParent) },
+        ],
+      )
+        .then(resp => {
+          // console.log('*************************');
+          // console.log(resp.data);
+          const data = JSON.parse(resp.data);
+          // console.log('*************************\\\\\\\\\\\\\\');
+          // console.log('works here');
+          const token = data.data; //"Don't touch this shit"
+          const jwt = jwt_decode(token);
+          const full = JSON.parse(jwt.data.data);
+          // console.log(full);
+          // console.log(full.serial_parent);
+          if (!full.message) {
+            console.log("user has registered imei...");
+            this.setState({
+              prev: full[0].serial_parent
+            });
+          } else {
+            console.log("user doesn't have registered imei...");
+            this.setState({
+              insertImei: true
+            });
+          }
+          this.confirmSignin();
+        })
+        .catch(err => {
+          console.log('error response');
+          console.log(err);
+          this.setState({
+            ActivityIndicator: false,
+          });
+        });
+    } catch (error) {
+      this.setState({
+        ActivityIndicator: false,
+      });
+      console.log(error);
+    }
+  }
+
   cancelSignin = () => {
     this.setState({
       id: '',
@@ -254,62 +353,87 @@ export default class Login extends PureComponent {
       const id = await DeviceInfo.getUniqueId();
       // console.log(id);
       ///////////////////////////////////////
-      if (this.state.prev == '' || this.state.prev == id) {
-        RNFetchBlob.fetch(
-          'POST',
-          mainDomain2 + 'insertParentImei.php',
-          {
-            // Authorization: "Bearer access-token",
-            // otherHeader: "foo",
-            'Content-Type': 'multipart/form-data',
-          },
-          [
-            // to send data
-            { name: 'imei', data: String(id) },
-            { name: 'parentId', data: this.state.id.toString() },
-          ],
-        )
-          .then(res => {
-            // console.log(res.data);
-            const data = JSON.parse(res.data);
-            const token = data.data; //"Don't touch this shit"
-            const jwt = jwt_decode(token);
-            const full = JSON.parse(jwt.data.data);
-            // console.log(full)
-            if (
-              full.message == 'inserted' ||
-              this.state.user ||
-              this.state.prev == id
-            ) {
-              this.state.userData.password = this.state.password;
-              AsyncStorage.setItem(
-                'parentInfo',
-                JSON.stringify(this.state.userData),
-              ).then(() => {
-                this.setState({
-                  setModalVisible: false,
-                  ActivityIndicator: false,
+      if (this.state.prev == id) {
+        console.log("the user is using his old phone...");
+        this.state.userData.password = this.state.password;
+        AsyncStorage.setItem(
+          'parentInfo',
+          JSON.stringify(this.state.userData),
+        ).then(() => {
+          this.setState({
+            setModalVisible: false,
+            ActivityIndicator: false,
+          });
+        });
+        this.goHome();
+        AsyncStorage.setItem('parentId', this.state.id);
+        return
+      } else if (this.state.prev != '' && !this.state.insertImei) {
+        this.setState({
+          ActivityIndicator: false,
+          setModalVisible: false,
+          id: '',
+          password: '',
+          user: false
+        });
+        console.log("trying to login with new phone...");
+        console.log("your device ID : ", id);
+        console.log("registered device ID : ", this.state.prev);
+        Alert.alert(' ', 'لايمكنك تسجيل الدخول من هاتف اخر');
+        return
+      }
+
+      if (this.state.prev == '' || this.state.insertImei) {
+        console.log("inserting imei...");
+        try {
+          RNFetchBlob.fetch(
+            'POST',
+            mainDomain + 'insertParentImei.php',
+            {
+              // Authorization: "Bearer access-token",
+              // otherHeader: "foo",
+              'Content-Type': 'multipart/form-data',
+            },
+            [
+              // to send data
+              { name: 'imei', data: String(id) },
+              { name: 'parentId', data: String(this.state.userData.MatriculeParent) },
+            ],
+          )
+            .then(res => {
+              // console.log(res.data);
+              const data = JSON.parse(res.data);
+              const token = data.data; //"Don't touch this shit"
+              const jwt = jwt_decode(token);
+              const full = JSON.parse(jwt.data.data);
+              // console.log(full)
+              if (
+                full.message == 'inserted' || this.state.user
+              ) {
+                this.state.userData.password = this.state.password;
+                AsyncStorage.setItem(
+                  'parentInfo',
+                  JSON.stringify(this.state.userData),
+                ).then(() => {
+                  this.setState({
+                    setModalVisible: false,
+                    ActivityIndicator: false,
+                  });
                 });
-              });
-              this.goHome();
-              AsyncStorage.setItem('parentId', this.state.id);
-            } else {
+                this.goHome();
+                AsyncStorage.setItem('parentId', this.state.id);
+              }
+            })
+            .catch(err => {
               this.setState({
                 ActivityIndicator: false,
-                setModalVisible: false,
-                id: '',
-                password: '',
               });
-              Alert.alert(' ', 'لايمكنك تسجيل الدخول من هاتف اخر');
-            }
-          })
-          .catch(err => {
-            this.setState({
-              ActivityIndicator: false,
+              console.log('error response111');
+              console.log(err);
             });
-            console.log('error response111');
-            console.log(err);
-          });
+        } catch (error) {
+          console.log("error inserting user IMEI : ", error)
+        }
       } else {
         this.setState({
           ActivityIndicator: false,
@@ -417,7 +541,7 @@ export default class Login extends PureComponent {
                   </Text>
                 </TouchableOpacity>
                 <TouchableOpacity
-                  onPress={() => this.confirmSignin()}
+                  onPress={() => this.checkImei()}
                   style={[
                     styles.rowData,
                     {

@@ -1,4 +1,4 @@
-import React, {Component} from 'react';
+import React, { Component } from 'react';
 import {
   StatusBar,
   Text,
@@ -7,16 +7,18 @@ import {
   Alert,
   PermissionsAndroid,
 } from 'react-native';
-import {Box} from 'react-native-design-utility';
+import { Box } from 'react-native-design-utility';
 import OnboardingLogo from '../commons/OnboardingLogo';
 import NetInfo from '@react-native-community/netinfo';
+import { requestUserPermission } from '../config/var';
+import { firebaseConfig } from '../config/Firebase';
+import app from '@react-native-firebase/app'
 
 class SplashScreen extends Component {
   state = {};
 
   componentDidMount() {
-    // this.props.navigation.navigate('Tabs', { navigation: this.props.navigation })
-    // this.checkAuth();
+    requestUserPermission()
     this.connect();
     // app.initializeApp(firebaseConfig);
   }
@@ -26,7 +28,7 @@ class SplashScreen extends Component {
     formData.append('appName', 'booksAlg');
     const requestOptions = {
       method: 'POST',
-      header: {'Content-Type': 'application/json'},
+      header: { 'Content-Type': 'application/json' },
       body: formData,
     };
 
@@ -84,7 +86,7 @@ class SplashScreen extends Component {
           ),
         });
       } else {
-        this.setState({connected: null});
+        this.setState({ connected: null });
         this.checkApp();
       }
     });
@@ -92,7 +94,7 @@ class SplashScreen extends Component {
 
   render() {
     return (
-      <Box style={{width: '100%'}} bg="#FFF" f={1} center>
+      <Box style={{ width: '100%' }} bg="#FFF" f={1} center>
         <StatusBar backgroundColor="#32899F" />
         <OnboardingLogo />
         {this.state.connected}

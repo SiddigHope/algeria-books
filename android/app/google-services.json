@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "1029540054186",
+    "project_id": "teacher-f9052",
+    "storage_bucket": "teacher-f9052.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1029540054186:android:7db3c2cdfd5e2f013e3cd3",
+        "android_client_info": {
+          "package_name": "com.bookstore"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1029540054186-fb6k9af3uheki4qpda9r45st783cf55s.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.bookstore",
+            "certificate_hash": "818c37f1ce6fb42774f77b43284057a394309768"
+          }
+        },
+        {
+          "client_id": "1029540054186-r5rlv7donfvihesksnkg8udbi1r8c7i4.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCCt4F4ZfGUNzUzhFFgmjD8s30DXM5eELM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1029540054186-r5rlv7donfvihesksnkg8udbi1r8c7i4.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

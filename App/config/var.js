@@ -1,5 +1,8 @@
-import { PermissionsAndroid, Platform, ToastAndroid } from 'react-native';
+import { PermissionsAndroid, Platform, ToastAndroid, Alert, AlertIOS } from 'react-native';
 import RNFetchBlob from 'rn-fetch-blob';
+import messaging from '@react-native-firebase/messaging';
+import _ from 'lodash';
+import PushNotification from 'react-native-push-notification';
 
 // export const mainDomain = 'http://192.168.43.148/server/';
 
@@ -23,11 +26,14 @@ export const newsAssetsDomain2 = 'https://educjijel18.com/news_image/';
     -- getOrdersStatus
     -- insertIntoOrder
     -- getOrders
+    -- insertParentImei
+    -- tokenRegistration
+    -- getImei
 
   mainDomain2 variable contains the following endpoints
 
     -- getParentData
-    -- insertParentImei
+    -- insertParentImei (removed to api1) 
     -- getMyChildren
     -- getStudentBooks
     -- getPdfInfo
@@ -55,6 +61,41 @@ export const getPermission = async file => {
 export const openPdf = file => {
   RNFetchBlob.android.actionViewIntent(file, 'application/pdf');
 };
+
+
+export async function requestUserPermission() {
+  const authStatus = await messaging().requestPermission();
+  const enabled =
+    authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
+    authStatus === messaging.AuthorizationStatus.PROVISIONAL;
+
+  if (enabled) {
+    console.log('Authorization status:', authStatus);
+  }
+  messaging().onNotificationOpenedApp((remoteMessage) => {
+    // Alert.alert(remoteMessage.ttl,remoteMessage.data)
+    Alert.alert(
+      remoteMessage.notification.title,
+      remoteMessage.notification.body,
+    );
+  });
+
+  messaging().getInitialNotification((remoteMessage) => {
+    // Alert.alert(remoteMessage.ttl,remoteMessage.data)
+    Alert.alert(
+      remoteMessage.notification.title,
+      remoteMessage.notification.body,
+    );
+  });
+
+  messaging().onMessage((remoteMessage) => {
+    // Alert.alert(remoteMessage.ttl,remoteMessage.data)
+    Alert.alert(
+      remoteMessage.notification.title,
+      remoteMessage.notification.body,
+    );
+  });
+}
 
 // console.log(item.index)
 //    let backgroundColor = '#FFF';
